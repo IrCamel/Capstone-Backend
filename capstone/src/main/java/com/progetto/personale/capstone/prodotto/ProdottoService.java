@@ -20,9 +20,13 @@ public class ProdottoService {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    /////////////////FIND ALL//////////////////////
+
     public List<Prodotto> findAll(){
         return repository.findAll();
     }
+
+    /////////////////FIND BY ID//////////////////////
 
     public Response findById(Long id) {
         if (!repository.existsById(id)) {
@@ -31,23 +35,24 @@ public class ProdottoService {
         Prodotto entity = repository.findById(id).get();
         Response prodottoResponse = new Response();
 
-        //Codice che sostituisce il mapper
         BeanUtils.copyProperties(entity, prodottoResponse);
         return  prodottoResponse;
     }
 
-    //CREATE PRODOTTO
+    /////////////////CREATE PRODOTTO//////////////////////
 
     @Transactional
-    public Response createProdotto(Request request){
+    public CompleteResponse createProdotto(Request request){
         Prodotto entity = new Prodotto();
         BeanUtils.copyProperties(request, entity);
         List<Categoria> categorie = categoriaRepository.findAllById(request.getIdCategorie());
-        Response response = new Response();
+        CompleteResponse response = new CompleteResponse();
         repository.save(entity);
         BeanUtils.copyProperties(entity, response);
         return response;
     }
+
+    /////////////////EDIT PRODOTTO//////////////////////
 
     public Response editProdotto(Long id, Request prodottoRequest){
         if(!repository.existsById(id)){
@@ -64,11 +69,14 @@ public class ProdottoService {
 
     }
 
-    public String deleteProdotto(Long id){
-        if(!repository.existsById(id)){
+    /////////////////DELETE PRODOTTO//////////////////////
+
+    public String deleteProdotto(Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return "Prodotto eliminato con successo";
+        } else {
             throw new EntityNotFoundException("Prodotto non trovato");
         }
-        repository.deleteById(id);
-        return "Prodotto eliminato correttamente";
     }
 }

@@ -1,5 +1,6 @@
 package com.progetto.personale.capstone.prodotto;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/prodotti")
+@RequestMapping("/prodotti")
 public class ProdottoController {
 
     @Autowired
@@ -24,8 +25,9 @@ public class ProdottoController {
     }
 
     @PostMapping
-    public ResponseEntity<Response> create(@RequestBody Request request){
-        return ResponseEntity.ok(service.createProdotto(request));
+    public ResponseEntity<CompleteResponse> createProdotto( @Valid @RequestBody Request request){
+        CompleteResponse response = service.createProdotto(request);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")

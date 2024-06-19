@@ -11,14 +11,13 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-@Order(15)
 public class UserRunner implements ApplicationRunner {
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private UserRespository userRespository;
+    private UserRepository userRespository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {

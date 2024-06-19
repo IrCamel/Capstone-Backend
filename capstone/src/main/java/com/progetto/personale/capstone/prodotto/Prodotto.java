@@ -1,8 +1,12 @@
 package com.progetto.personale.capstone.prodotto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.progetto.personale.capstone.categoria.Categoria;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.apache.commons.lang3.builder.ToStringExclude;
+
+import java.util.List;
 
 
 @Entity
@@ -17,14 +21,16 @@ public class Prodotto {
     @Column(length = 50, unique = true)
     private String nomeProdotto;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 250)
     private String descrizioneProdotto;
 
     @Column(unique = true)
-    private int prezzo;
+    private Integer prezzo;
 
     @ManyToOne
-    private Categoria categoria;
+    @ToStringExclude
+    @JsonIgnoreProperties("prodotto")
+    private List<Categoria> categorie;
 
 
 

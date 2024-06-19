@@ -6,8 +6,10 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Response {
+public class CompleteResponse {
     private Long id;
     private String nomeProdotto;
-    private List<Categoria> categorie;
+    private String descrizioneProdotto;
+    private Integer prezzo;
+    private List<Categoria> categoria;
 }

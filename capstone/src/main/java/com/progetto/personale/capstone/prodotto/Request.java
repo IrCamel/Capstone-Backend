@@ -8,6 +8,6 @@ import java.util.List;
 public class Request {
     private String nomeProdotto;
     private String descrizioneProdotto;
-    private int prezzo;
+    private Integer prezzo;
     private List<Long> idCategorie;
 }
