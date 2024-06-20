@@ -4,10 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.progetto.personale.capstone.categoria.Categoria;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringExclude;
-
-import java.util.List;
-
 
 @Entity
 @Data
@@ -28,10 +24,15 @@ public class Prodotto {
     private Integer prezzo;
 
     @ManyToOne
-    @ToStringExclude
-    @JsonIgnoreProperties("prodotto")
-    private List<Categoria> categorie;
+    @JoinColumn(name = "nome_categoria")  // Definire la colonna che conterrà il riferimento alla categoria
+    private Categoria categoria;
 
+    public Categoria getCategoria() {
+        return categoria;
+    }
 
-
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
 }
+

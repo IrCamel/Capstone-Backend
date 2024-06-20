@@ -7,12 +7,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     @Autowired
-    private UserService user;
+    private UserService service;
 
     @Autowired
     private UserRepository usersRepository;
@@ -25,7 +27,7 @@ public class UserController {
         if (validator.hasErrors()) {
             throw new ApiValidationException(validator.getAllErrors());
         }
-        var registeredUser = user.register(
+        var registeredUser = service.register(
                 RegisterUserDTO.builder()
                         .withNome(model.nome())
                         .withCognome(model.cognome())
@@ -43,12 +45,23 @@ public class UserController {
         if (validator.hasErrors()) {
             throw  new ApiValidationException(validator.getAllErrors());
         }
-        return new ResponseEntity<>(user.login(model.username(), model.password()).orElseThrow(), HttpStatus.OK);
+        return new ResponseEntity<>(service.login(model.username(), model.password()).orElseThrow(), HttpStatus.OK);
     }
 
     @PostMapping("/registerAdmin")
     public ResponseEntity<RegisteredUserDTO> registerAdmin(@RequestBody RegisterUserDTO registerUser){
-        return ResponseEntity.ok(user.registerAdmin(registerUser));
+        return ResponseEntity.ok(service.registerAdmin(registerUser));
+    }
+
+    @GetMapping("/{id}")
+    public UserResponse getUserById(@PathVariable Long id) {
+        return service.findById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        String response = service.deleteUser(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 

@@ -1,11 +1,11 @@
 package com.progetto.personale.capstone.categoria;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,55 +13,57 @@ import java.util.List;
 public class CategoriaService {
 
     @Autowired
-    private  CategoriaRepository repository;
+    private CategoriaRepository repository;
 
+    // GET ALL
     public List<Categoria> findAll(){
         return repository.findAll();
     }
 
-    public Response findById(Long id) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Categoria inesistente");
+    // GET per ID
+    public Response findById(Long id){
+        if(!repository.existsById(id)){
+            throw new EntityNotFoundException("Categoria non trovata");
         }
         Categoria entity = repository.findById(id).get();
-        Response categoriaResponse = new Response();
-
-        //Codice che sostituisce il mapper
-        BeanUtils.copyProperties(entity, categoriaResponse);
-        return  categoriaResponse;
+        Response response = new Response();
+        BeanUtils.copyProperties(entity, response);
+        return response;
     }
 
-    public Response createCategoria(Request categoriaRequest){
+    // POST
+    @Transactional
+    public Response createCategoria(@Valid Categoria categoria) {
         Categoria entity = new Categoria();
-
-        BeanUtils.copyProperties(categoriaRequest, entity);
-        Response categoriaResponse = new Response();
-
-        BeanUtils.copyProperties(entity, categoriaResponse);
+        BeanUtils.copyProperties(categoria, entity);
         repository.save(entity);
-        return categoriaResponse;
+        Response response = new Response();
+        BeanUtils.copyProperties(entity, response);
+        return response;
     }
 
-    public Response editCategoria(Long id, Request categoriaRequest){
+    // PUT
+    public Response editCategoria(Long id, Request request){
+
         if(!repository.existsById(id)){
             throw new EntityNotFoundException("Categoria non trovata");
         }
         Categoria entity = repository.findById(id).get();
-        BeanUtils.copyProperties(categoriaRequest, entity);
+        BeanUtils.copyProperties(request, entity);
         repository.save(entity);
-
-        Response categoriaResponse = new Response();
-        BeanUtils.copyProperties(entity, categoriaResponse);
-
-        return  categoriaResponse;
-
+        Response response = new Response();
+        BeanUtils.copyProperties(entity, response);
+        return response;
     }
 
+
+    //DELETE
     public String deleteCategoria(Long id){
+
         if(!repository.existsById(id)){
-            throw new EntityNotFoundException("Categoria non trovata");
+            throw  new EntityNotFoundException("Categoria non trovata");
         }
         repository.deleteById(id);
-        return "Categoria eliminata correttamente";
+        return "Categoria eliminata";
     }
 }

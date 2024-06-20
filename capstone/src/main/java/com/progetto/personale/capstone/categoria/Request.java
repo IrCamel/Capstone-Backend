@@ -4,5 +4,13 @@ import lombok.Data;
 
 @Data
 public class Request {
-    private String nome;
+    private String nomeCategoria;
+
+    public String getNomeCategoria() {
+        return nomeCategoria;
+    }
+
+    public void setNomeCategoria(String nomeCategoria) {
+        this.nomeCategoria = nomeCategoria;
+    }
 }

@@ -3,7 +3,8 @@ package com.progetto.personale.capstone.security;
 
 //import com.progetto.personale.capstone.email.EmailService;
 import jakarta.persistence.EntityExistsException;
-        import lombok.RequiredArgsConstructor;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-        import java.util.List;
+import java.util.List;
         import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -22,6 +23,8 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+
+//
 
     private final PasswordEncoder encoder;
     private final UserRepository usersRepository;
@@ -82,15 +85,6 @@ public class UserService {
             throw new EntityExistsException("Email gia' registrata");
         }
         Roles roles = rolesRepository.findById(Roles.ROLES_USER).get();
-        /*
-        if(!rolesRepository.existsById(Roles.ROLES_USER)){
-            roles = new Roles();
-            roles.setRoleType(Roles.ROLES_USER);
-        } else {
-            roles = rolesRepository.findById(Roles.ROLES_USER).get();
-        }
-
-         */
         User u = new User();
         BeanUtils.copyProperties(register, u);
         u.setPassword(encoder.encode(register.getPassword()));
@@ -124,6 +118,32 @@ public class UserService {
         return response;
 
     }
+
+    public UserResponse findById(Long id) {
+        Optional<User> optionalUser = usersRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            User entity = optionalUser.get();
+            UserResponse userResponse = new UserResponse();
+            BeanUtils.copyProperties(entity, userResponse);
+            return userResponse;
+        } else {
+            // Gestione del caso in cui l'utente non sia trovato
+            throw new EntityNotFoundException("L'utente con id " + id + " non è stato trovato");
+        }
+    }
+
+    public String deleteUser(Long id) {
+        if (usersRepository.existsById(id)) {
+            usersRepository.deleteById(id);
+            return "Utente eliminato con successo";
+        } else {
+            throw new EntityExistsException("L'utente con id +"+  id + "non è stato trovato");
+        }
+    }
+
+
+
+
 
 
 

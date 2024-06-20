@@ -1,5 +1,8 @@
 package com.progetto.personale.capstone.categoria;
 
+import com.progetto.personale.capstone.prodotto.CompleteResponse;
+import jakarta.validation.Valid;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,11 +10,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/categorie")
+@RequestMapping("/categorie")
 public class CategoriaController {
 
     @Autowired
     CategoriaService service;
+
+    @Autowired
+    CategoriaRepository repository;
 
     @GetMapping("/{id}")
     public ResponseEntity<Response> findById(@PathVariable Long id){
@@ -24,8 +30,9 @@ public class CategoriaController {
     }
 
     @PostMapping
-    public ResponseEntity<Response> create(@RequestBody Request request){
-        return ResponseEntity.ok(service.createCategoria(request));
+    public ResponseEntity<Response> createCategoria(@Valid @RequestBody Categoria categoria){
+        Response response = service.createCategoria(categoria);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")

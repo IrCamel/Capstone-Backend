@@ -58,15 +58,25 @@ public class ApplicationSecurityConfig {
                 .cors(Customizer.withDefaults()) // Utilizza la configurazione CORS
                 .authorizeHttpRequests(authorize ->
                                 authorize //CONFIGURAZIONE DELLA PROTEZIONE DEI VARI ENDPOINT
+
+                                        /////////////////////////////////CRUD ACCOUNT////////////////////////////////
+
                                         .requestMatchers("/users/login").permitAll()
-                                        .requestMatchers("/users/registerAdmin").permitAll() // DA CANCELLARE DOPO AVER CREATO L'ADMIN
-                                        .requestMatchers(HttpMethod.POST, "/users").permitAll() //ENDPOINT DI REGISTRAZIONE APERTO A TUTTI
-                                        .requestMatchers(HttpMethod.GET, "/**").authenticated() //TUTTE GLI ENDPOINTS DI TIPO GET SONO RICHIAMABILI SOLO SE L'UTENTE E AUTENTICATO
-                                        .requestMatchers(HttpMethod.PATCH, "/users/{id}").authenticated() //SOLO UN UTENTE AUTENTICATO PUO MODIFICARE I SUOI DATI
-                                        .requestMatchers(HttpMethod.POST,"/prodotti").authenticated()
+                                        .requestMatchers("/users").permitAll()
+                                        .requestMatchers(HttpMethod.PATCH, "/users/{id}").authenticated()
+                                        .requestMatchers(HttpMethod.DELETE, "/users/{id}").authenticated()
+                                        .requestMatchers(HttpMethod.GET, "/users/{id}").authenticated()
+
+                                        /////////////////////////////////CRUD PRODOTTO////////////////////////////////
+
+                                        .requestMatchers(HttpMethod.POST, "/prodotti").authenticated()
                                         .requestMatchers(HttpMethod.DELETE,"/prodotti/{id}").authenticated()
                                         .requestMatchers(HttpMethod.PUT, "/prodotti/{id}").authenticated()
-                        //.requestMatchers("/**").authenticated() //TUTTO CIO CHE PUO ESSERE SFUGGITO RICHIEDE L'AUTENTICAZIONE (SERVE A GESTIRE EVENTUALI DIMENTICANZE)
+
+                                        /////////////////////////////////CRUD CATEGORIE////////////////////////////////
+
+                                        .requestMatchers(HttpMethod.POST, "/categorie").authenticated()
+
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

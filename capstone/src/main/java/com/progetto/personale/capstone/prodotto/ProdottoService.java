@@ -4,6 +4,7 @@ import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.categoria.CategoriaRepository;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,12 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProdottoService {
 
-    @Autowired
-    private  ProdottoRepository repository;
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    private final  ProdottoRepository repository;
+    private final CategoriaRepository categoriaRepository;
 
     /////////////////FIND ALL//////////////////////
 
@@ -42,12 +42,13 @@ public class ProdottoService {
     /////////////////CREATE PRODOTTO//////////////////////
 
     @Transactional
-    public CompleteResponse createProdotto(Request request){
+    public CompleteResponse createProdotto(Request prodottoRequest) {
         Prodotto entity = new Prodotto();
-        BeanUtils.copyProperties(request, entity);
-        List<Categoria> categorie = categoriaRepository.findAllById(request.getIdCategorie());
-        CompleteResponse response = new CompleteResponse();
+        BeanUtils.copyProperties(prodottoRequest, entity);
+        Categoria categoria = categoriaRepository.findByNomeCategoria(prodottoRequest.getNomeCategoria());
+        entity.setCategoria(categoria);
         repository.save(entity);
+        CompleteResponse response = new CompleteResponse();
         BeanUtils.copyProperties(entity, response);
         return response;
     }

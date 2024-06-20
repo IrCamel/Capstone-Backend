@@ -9,5 +9,5 @@ import java.util.List;
 public class Response {
     private Long id;
     private String nomeProdotto;
-    private List<Categoria> categorie;
+    private List<Categoria> nomeCategoria;
 }
