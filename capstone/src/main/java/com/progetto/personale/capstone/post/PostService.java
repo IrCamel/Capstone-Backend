@@ -1,67 +1,73 @@
 package com.progetto.personale.capstone.post;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
-    @Autowired
-    private  PostRepository repository;
+    private final  PostRepository repository;
+
+    /////////////////FIND ALL//////////////////////
 
     public List<Post> findAll(){
         return repository.findAll();
     }
 
-    public Response findById(Long id) {
+    /////////////////FIND BY ID//////////////////////
+
+    public PostResponse findById(Long id) {
         if (!repository.existsById(id)) {
             throw new EntityNotFoundException("Post inesistente");
         }
         Post entity = repository.findById(id).get();
-        Response postResponse = new Response();
-
-        //Codice che sostituisce il mapper
+        PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(entity, postResponse);
         return  postResponse;
     }
 
-    public Response createPost(Request postRequest){
+    /////////////////CREATE POST//////////////////////
+
+    @Transactional
+    public PostResponse createPost(@Valid PostRequest postRequest) {
         Post entity = new Post();
-
         BeanUtils.copyProperties(postRequest, entity);
-        Response postResponse = new Response();
-
-        BeanUtils.copyProperties(entity, postResponse);
         repository.save(entity);
-        return postResponse;
+        PostResponse response = new PostResponse();
+        BeanUtils.copyProperties(entity, response);
+        return response;
     }
 
-    public Response editPost(Long id, Request postRequest){
+    /////////////////EDIT POST//////////////////////
+
+    public PostResponse editPost(Long id,PostRequest postRequest){
         if(!repository.existsById(id)){
             throw new EntityNotFoundException("Post non trovato");
         }
         Post entity = repository.findById(id).get();
         BeanUtils.copyProperties(postRequest, entity);
         repository.save(entity);
-
-        Response postResponse = new Response();
+        PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(entity, postResponse);
-
         return  postResponse;
 
     }
 
-    public String deletePost(Long id){
-        if(!repository.existsById(id)){
+    /////////////////DELETE POST//////////////////////
+
+    public String deletePost(Long id) {
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            return "Post eliminato con successo";
+        } else {
             throw new EntityNotFoundException("Post non trovato");
         }
-        repository.deleteById(id);
-        return "Post eliminato correttamente";
     }
 }

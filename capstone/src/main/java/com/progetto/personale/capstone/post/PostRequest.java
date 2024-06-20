@@ -3,8 +3,7 @@ package com.progetto.personale.capstone.post;
 import lombok.Data;
 
 @Data
-public class Response {
-    private Long id;
+public class PostRequest {
     private String titolo;
     private String descrizione;
 }

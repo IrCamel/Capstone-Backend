@@ -1,5 +1,7 @@
 package com.progetto.personale.capstone.security;
 
+import com.progetto.personale.capstone.post.Post;
+import com.progetto.personale.capstone.prodotto.Prodotto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,4 +33,10 @@ public class User{
     private String avatar;
     @ManyToMany(fetch = FetchType.EAGER)
     private final List<Roles> roles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    private List<Prodotto> prodotti = new ArrayList<>();
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL)
+    private List<Post> posts = new ArrayList<>();
 }

@@ -2,6 +2,7 @@ package com.progetto.personale.capstone.prodotto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.progetto.personale.capstone.categoria.Categoria;
+import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -26,6 +27,10 @@ public class Prodotto {
     @ManyToOne
     @JoinColumn(name = "nome_categoria")  // Definire la colonna che conterrà il riferimento alla categoria
     private Categoria categoria;
+
+    @ManyToOne
+    @JoinColumn(name = "users")  // Definire la colonna che conterrà il riferimento all'utente venditore
+    private User user;
 
     public Categoria getCategoria() {
         return categoria;

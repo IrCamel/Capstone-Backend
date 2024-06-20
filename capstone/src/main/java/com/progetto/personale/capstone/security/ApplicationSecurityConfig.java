@@ -73,6 +73,12 @@ public class ApplicationSecurityConfig {
                                         .requestMatchers(HttpMethod.DELETE,"/prodotti/{id}").authenticated()
                                         .requestMatchers(HttpMethod.PUT, "/prodotti/{id}").authenticated()
 
+                                        /////////////////////////////////CRUD POST////////////////////////////////
+
+                                        .requestMatchers(HttpMethod.POST, "/post").authenticated()
+                                        .requestMatchers(HttpMethod.DELETE,"/post/{id}").authenticated()
+                                        .requestMatchers(HttpMethod.PUT, "/post/{id}").authenticated()
+
                                         /////////////////////////////////CRUD CATEGORIE////////////////////////////////
 
                                         .requestMatchers(HttpMethod.POST, "/categorie").authenticated()

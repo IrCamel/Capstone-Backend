@@ -1,5 +1,6 @@
 package com.progetto.personale.capstone.post;
 
+import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,4 +18,9 @@ public class Post {
 
     @Column(length = 50, unique = true)
     private String descrizione;
+
+    @ManyToOne
+    @JoinColumn(name = "users")
+    private User user;
+
 }
