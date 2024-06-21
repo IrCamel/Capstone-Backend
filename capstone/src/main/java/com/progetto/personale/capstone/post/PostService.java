@@ -1,5 +1,7 @@
 package com.progetto.personale.capstone.post;
 
+import com.progetto.personale.capstone.security.User;
+import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,12 +10,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
     private final  PostRepository repository;
+    private final UserRepository userRepository;
 
     /////////////////FIND ALL//////////////////////
 
@@ -44,7 +48,6 @@ public class PostService {
         BeanUtils.copyProperties(entity, response);
         return response;
     }
-
     /////////////////EDIT POST//////////////////////
 
     public PostResponse editPost(Long id,PostRequest postRequest){

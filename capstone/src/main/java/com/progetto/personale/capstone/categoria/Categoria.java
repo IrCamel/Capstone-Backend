@@ -1,5 +1,7 @@
 package com.progetto.personale.capstone.categoria;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.progetto.personale.capstone.prodotto.Prodotto;
 import jakarta.persistence.*;
@@ -20,6 +22,7 @@ public class Categoria {
     @Column(length = 50, unique = true)
     private String nomeCategoria;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "categoria")
     private Set<Prodotto> prodotti = new HashSet<>();
 

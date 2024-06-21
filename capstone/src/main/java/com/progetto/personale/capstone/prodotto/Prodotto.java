@@ -1,5 +1,6 @@
 package com.progetto.personale.capstone.prodotto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.security.User;

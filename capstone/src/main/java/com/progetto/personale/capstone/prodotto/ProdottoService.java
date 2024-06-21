@@ -2,12 +2,11 @@ package com.progetto.personale.capstone.prodotto;
 
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.categoria.CategoriaRepository;
-import jakarta.persistence.Entity;
+import com.progetto.personale.capstone.security.User;
+import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +18,7 @@ public class ProdottoService {
 
     private final  ProdottoRepository repository;
     private final CategoriaRepository categoriaRepository;
+    private final UserRepository userRepository;
 
     /////////////////FIND ALL//////////////////////
 
@@ -40,7 +40,6 @@ public class ProdottoService {
     }
 
     /////////////////CREATE PRODOTTO//////////////////////
-
     @Transactional
     public CompleteResponse createProdotto(Request prodottoRequest) {
         Prodotto entity = new Prodotto();

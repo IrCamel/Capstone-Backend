@@ -41,17 +41,11 @@ public class JwtUtils {
             byte[] keyBytes = securityKey.getBytes();
             SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-            //PRENDIAMO LA DATA DI SCADENZA DAL TOKEN
+
             Date expirationDate = Jwts.parser()
                     .verifyWith(key).build()
                     .parseSignedClaims(token).getPayload().getExpiration();
 
-            //token valido fino a 2024-04-01
-            //token verificato il 2024-06-13
-
-            //token valido fino 2024-06-13 10:01:00
-            //token verifcato il 2024-06-13 10:02:00
-            //VERIFICHIAMO SE LA DATA DI SCADENZA TROVATA E PRIMA O DOPO LA DATA DI OGGI
             if (expirationDate.before(new Date()))
                 throw new JwtException("Token expired");
             Jwts.parser()
