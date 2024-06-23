@@ -1,5 +1,6 @@
 package com.progetto.personale.capstone.email;
 
+import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,16 @@ public class EmailService {
     @Autowired
     private JavaMailSender emailSender;
 
+    private UserRepository userRepository;
+
     public void sendWelcomeEmail(String recipientEmail) {
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
 
         try {
             helper.setTo(recipientEmail);
-            helper.setSubject("Ciao cazzone");
-            helper.setText("Grazie per essere un cornuto cazzone figlio di puttana");
+            helper.setSubject("Registrazione confermata!");
+            helper.setText("Benvenuto! Grazie per esserti registrato");
 
             emailSender.send(message);
         } catch (MessagingException e) {

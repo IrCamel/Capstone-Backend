@@ -11,5 +11,7 @@ public class CompleteResponse {
     private String nomeProdotto;
     private String descrizioneProdotto;
     private Integer prezzo;
+    private String imgUrl;
+    private String username;
     private List<Categoria> categoria;
 }

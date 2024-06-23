@@ -7,4 +7,5 @@ public class PostResponse {
     private Long id;
     private String titolo;
     private String descrizione;
+    private String imgUrl;
 }

@@ -1,5 +1,8 @@
 package com.progetto.personale.capstone.post;
 
+import com.cloudinary.Cloudinary;
+import com.progetto.personale.capstone.prodotto.Prodotto;
+import com.progetto.personale.capstone.prodotto.Request;
 import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -8,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +23,7 @@ public class PostService {
 
     private final  PostRepository repository;
     private final UserRepository userRepository;
+    private final Cloudinary cloudinary;
 
     /////////////////FIND ALL//////////////////////
 
@@ -40,8 +46,12 @@ public class PostService {
     /////////////////CREATE POST//////////////////////
 
     @Transactional
-    public PostResponse createPost(@Valid PostRequest postRequest) {
+    public PostResponse createPost(PostRequest postRequest, MultipartFile file) throws IOException {
+        var uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                com.cloudinary.utils.ObjectUtils.asMap("public_id", postRequest.getTitolo() + "_avatar"));
+        String url = uploadResult.get("url").toString();
         Post entity = new Post();
+        entity.setImgUrl(url);
         BeanUtils.copyProperties(postRequest, entity);
         repository.save(entity);
         PostResponse response = new PostResponse();

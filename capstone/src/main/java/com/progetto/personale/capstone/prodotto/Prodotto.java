@@ -25,12 +25,15 @@ public class Prodotto {
     @Column(unique = true)
     private Integer prezzo;
 
+    @Column
+    private String imgUrl;
+
     @ManyToOne
     @JoinColumn(name = "nome_categoria")  // Definire la colonna che conterrà il riferimento alla categoria
     private Categoria categoria;
 
     @ManyToOne
-    @JoinColumn(name = "users")  // Definire la colonna che conterrà il riferimento all'utente venditore
+    @JoinColumn(name = "username")
     private User user;
 
     public Categoria getCategoria() {

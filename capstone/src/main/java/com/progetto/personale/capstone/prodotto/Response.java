@@ -9,5 +9,9 @@ import java.util.List;
 public class Response {
     private Long id;
     private String nomeProdotto;
-    private List<Categoria> nomeCategoria;
+    private String descrizioneProdotto;
+    private Integer prezzo;
+    private String imgUrl;
+    private String username; // Aggiungi questo campo
+    private List<Categoria> categoria;
 }

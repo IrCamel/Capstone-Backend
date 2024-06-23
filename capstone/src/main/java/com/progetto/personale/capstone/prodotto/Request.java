@@ -8,4 +8,5 @@ public class Request {
     private String descrizioneProdotto;
     private Integer prezzo;
     private String nomeCategoria;
+    private Long userId;
 }

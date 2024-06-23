@@ -34,3 +34,4 @@ build/
 
 ### PROGETTO PERSONALE###
 env.properties
+src/main/resources/application.properties
