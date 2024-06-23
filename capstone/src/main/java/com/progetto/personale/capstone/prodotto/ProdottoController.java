@@ -36,12 +36,10 @@ public class ProdottoController {
         ObjectMapper objectMapper = new ObjectMapper();
         Request request = objectMapper.readValue(prodottoJson, Request.class);
 
-        // Supponiamo di ottenere il nome dell'utente dal contesto di sicurezza
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        CompleteResponse response = service.createProdotto(request, file, username);
+        CompleteResponse response = service.createProdotto(request, file);
         return ResponseEntity.ok(response);
     }
+
 
 
     @PutMapping("/{id}")
