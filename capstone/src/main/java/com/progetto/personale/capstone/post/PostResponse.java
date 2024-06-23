@@ -8,4 +8,5 @@ public class PostResponse {
     private String titolo;
     private String descrizione;
     private String imgUrl;
+    private String username;
 }

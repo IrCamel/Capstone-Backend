@@ -1,6 +1,8 @@
 package com.progetto.personale.capstone.post;
 
 import com.cloudinary.Cloudinary;
+import com.progetto.personale.capstone.categoria.Categoria;
+import com.progetto.personale.capstone.prodotto.CompleteResponse;
 import com.progetto.personale.capstone.prodotto.Prodotto;
 import com.progetto.personale.capstone.prodotto.Request;
 import com.progetto.personale.capstone.security.User;
@@ -50,15 +52,23 @@ public class PostService {
         var uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 com.cloudinary.utils.ObjectUtils.asMap("public_id", postRequest.getTitolo() + "_avatar"));
         String url = uploadResult.get("url").toString();
+
         Post entity = new Post();
         entity.setImgUrl(url);
         BeanUtils.copyProperties(postRequest, entity);
+
+        // Assume che l'ID dell'utente sia passato nel prodottoRequest
+        User user = userRepository.findById(postRequest.getUserId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
+        entity.setUser(user);
+
         repository.save(entity);
+
         PostResponse response = new PostResponse();
         BeanUtils.copyProperties(entity, response);
+        response.setUsername(user.getUsername());
+
         return response;
-    }
-    /////////////////EDIT POST//////////////////////
+    }///////////////EDIT POST//////////////////////
 
     public PostResponse editPost(Long id,PostRequest postRequest){
         if(!repository.existsById(id)){
