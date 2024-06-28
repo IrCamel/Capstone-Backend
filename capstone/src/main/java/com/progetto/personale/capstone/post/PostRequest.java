@@ -6,5 +6,5 @@ import lombok.Data;
 public class PostRequest {
     private String titolo;
     private String descrizione;
-    private Long userId;
+    private String imageUrl;
 }

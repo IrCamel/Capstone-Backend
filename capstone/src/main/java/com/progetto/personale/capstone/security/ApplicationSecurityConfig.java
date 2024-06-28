@@ -22,8 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.util.Properties;
 
 @Configuration
-//QUESTA ANNOTAZIONE SERVE A COMUNICARE A SPRING CHE QUESTA  CLASSE è UTILIZZATA PER CONFIGURARE LA SECURITY
-@EnableWebSecurity()
+@EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig {
 
@@ -55,55 +54,45 @@ public class ApplicationSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults()) // Utilizza la configurazione CORS
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize ->
-                                authorize //CONFIGURAZIONE DELLA PROTEZIONE DEI VARI ENDPOINT
+                        authorize
+                                .requestMatchers("/users/login").permitAll()
+                                .requestMatchers("/users").permitAll()
+                                .requestMatchers(HttpMethod.PATCH, "/users/{id}").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/users/{id}").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/users/{id}").authenticated()
 
-                                        /////////////////////////////////CRUD ACCOUNT////////////////////////////////
+                                .requestMatchers(HttpMethod.POST, "/prodotti").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/prodotti/{id}").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/prodotti/{id}").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/prodotti").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/prodotti/{id}").authenticated()
 
-                                        .requestMatchers("/users/login").permitAll()
-                                        .requestMatchers("/users").permitAll()
-                                        .requestMatchers(HttpMethod.PATCH, "/users/{id}").authenticated()
-                                        .requestMatchers(HttpMethod.DELETE, "/users/{id}").authenticated()
-                                        .requestMatchers(HttpMethod.GET, "/users/{id}").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/post").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/post/{id}").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/post/{id}").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/post").authenticated()
 
-                                        /////////////////////////////////CRUD PRODOTTO////////////////////////////////
-
-                                        .requestMatchers(HttpMethod.POST, "/prodotti").authenticated()
-                                        .requestMatchers(HttpMethod.DELETE,"/prodotti/{id}").authenticated()
-                                        .requestMatchers(HttpMethod.PUT, "/prodotti/{id}").authenticated()
-                                        .requestMatchers(HttpMethod.GET, "/prodotti").authenticated()
-                                        .requestMatchers(HttpMethod.GET, "/prodotti/{id}").authenticated()
-
-                                        /////////////////////////////////CRUD POST////////////////////////////////
-
-                                        .requestMatchers(HttpMethod.POST, "/post").authenticated()
-                                        .requestMatchers(HttpMethod.DELETE,"/post/{id}").authenticated()
-                                        .requestMatchers(HttpMethod.PUT, "/post/{id}").authenticated()
-
-                                        /////////////////////////////////CRUD CATEGORIE////////////////////////////////
-
-                                        .requestMatchers(HttpMethod.POST, "/categorie").authenticated()
-
+                                .requestMatchers(HttpMethod.POST, "/categorie").authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                //COMUNICA ALLA FILTERCHAIN QUALE FILTRO UTILIZZARE, SENZA QUESTA RIGA DI CODICE IL FILTRO NON VIENE RICHIAMATO
                 .addFilterBefore(authenticationJwtToken(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public JavaMailSenderImpl getJavaMailSender(@Value("${gmail.mail.transport.protocol}" )String protocol,
+    public JavaMailSenderImpl getJavaMailSender(@Value("${gmail.mail.transport.protocol}" ) String protocol,
                                                 @Value("${gmail.mail.smtp.auth}" ) String auth,
-                                                @Value("${gmail.mail.smtp.starttls.enable}" )String starttls,
-                                                @Value("${gmail.mail.debug}" )String debug,
-                                                @Value("${gmail.mail.from}" )String from,
-                                                @Value("${gmail.mail.from.password}" )String password,
-                                                @Value("${gmail.smtp.ssl.enable}" )String ssl,
-                                                @Value("${gmail.smtp.host}" )String host,
-                                                @Value("${gmail.smtp.port}" )String port){
+                                                @Value("${gmail.mail.smtp.starttls.enable}" ) String starttls,
+                                                @Value("${gmail.mail.debug}" ) String debug,
+                                                @Value("${gmail.mail.from}" ) String from,
+                                                @Value("${gmail.mail.from.password}" ) String password,
+                                                @Value("${gmail.smtp.ssl.enable}" ) String ssl,
+                                                @Value("${gmail.smtp.host}" ) String host,
+                                                @Value("${gmail.smtp.port}" ) String port){
 
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(host);
@@ -117,10 +106,8 @@ public class ApplicationSecurityConfig {
         props.put("mail.smtp.auth", auth);
         props.put("mail.smtp.starttls.enable", starttls);
         props.put("mail.debug", debug);
-        props.put("smtp.ssl.enable",ssl);
+        props.put("smtp.ssl.enable", ssl);
 
         return mailSender;
     }
-
 }
-

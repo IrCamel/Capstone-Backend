@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.progetto.personale.capstone.post.*;
 import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +19,9 @@ import java.util.List;
 @RequestMapping("/post")
 public class PostController {
 
-
     private final PostService service;
     private final UserService userService;
     private final PostRepository repository;
-
-
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> findById(@PathVariable Long id){
@@ -57,4 +52,3 @@ public class PostController {
         return ResponseEntity.ok(service.deletePost(id));
     }
 }
-
