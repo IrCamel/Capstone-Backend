@@ -16,7 +16,7 @@ public class Post {
     @Column(length = 50, unique = true)
     private String titolo;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 500, unique = true)
     private String descrizione;
 
     @Column

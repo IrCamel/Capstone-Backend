@@ -42,6 +42,12 @@ public class PostController {
         return ResponseEntity.ok(postResponse);
     }
 
+    @GetMapping("/image-url/{postId}")
+    public ResponseEntity<String> getImageUrl(@PathVariable Long postId) {
+        String imageUrl = service.getImageUrl(postId);
+        return ResponseEntity.ok(imageUrl);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> modify(@PathVariable Long id, @RequestBody PostRequest PostRequest){
         return ResponseEntity.ok(service.editPost(id, PostRequest));

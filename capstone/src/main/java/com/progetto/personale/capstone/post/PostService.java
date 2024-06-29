@@ -6,6 +6,7 @@ import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,9 @@ public class PostService {
     private final PostRepository repository;
     private final UserRepository userRepository;
     private final Cloudinary cloudinary;
+
+    @Value("${app.images.base-url}")
+    private String imagesBaseUrl;
 
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
@@ -47,11 +51,6 @@ public class PostService {
     /////////////////CREATE POST//////////////////////
     @Transactional
     public PostResponse createPost(PostRequest postRequest, MultipartFile file) throws IOException {
-//        if (postRequest.getUserId() == null) {
-//            logger.error("User ID is null in postRequest");
-//            throw new IllegalArgumentException("User ID must not be null");
-//        }
-
         logger.info("Creating post with title: {}", postRequest.getTitolo());
         var uploadResult = cloudinary.uploader().upload(file.getBytes(),
                 com.cloudinary.utils.ObjectUtils.asMap("public_id", postRequest.getTitolo() + "_avatar"));
@@ -61,15 +60,10 @@ public class PostService {
         entity.setImgUrl(url);
         BeanUtils.copyProperties(postRequest, entity);
 
-        // Assume che l'ID dell'utente sia passato nel postRequest
-//        User user = userRepository.findById(postRequest.getUserId()).orElseThrow(() -> new EntityNotFoundException("User not found"));
-//        entity.setUser(user);
-
         repository.save(entity);
 
         PostResponse response = new PostResponse();
         BeanUtils.copyProperties(entity, response);
-//        response.setUsername(user.getUsername());
 
         return response;
     }
@@ -101,5 +95,11 @@ public class PostService {
         } else {
             throw new EntityNotFoundException("Post non trovato");
         }
+    }
+
+    /////////////////GET IMAGE URL//////////////////////
+    public String getImageUrl(Long postId) {
+        Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
+        return imagesBaseUrl + "/" + post.getImgUrl();
     }
 }
