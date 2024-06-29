@@ -29,12 +29,12 @@ public class PostService {
 
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
-    /////////////////FIND ALL//////////////////////
+    // FIND ALL
     public List<Post> findAll() {
         return repository.findAll();
     }
 
-    /////////////////FIND BY ID//////////////////////
+    // FIND BY ID
     public PostResponse findById(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("The given id must not be null");
@@ -45,10 +45,12 @@ public class PostService {
         Post entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post inesistente"));
         PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(entity, postResponse);
+        postResponse.setUsername(entity.getUser().getUsername());
+        postResponse.setImageUrl(entity.getImgUrl());
         return postResponse;
     }
 
-    /////////////////CREATE POST//////////////////////
+    // CREATE POST
     @Transactional
     public PostResponse createPost(PostRequest postRequest, MultipartFile file) throws IOException {
         logger.info("Creating post with title: {}", postRequest.getTitolo());
@@ -60,15 +62,21 @@ public class PostService {
         entity.setImgUrl(url);
         BeanUtils.copyProperties(postRequest, entity);
 
+        // Fetching user by ID and setting to post
+        User user = userRepository.findById(postRequest.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        entity.setUser(user);
+
         repository.save(entity);
 
         PostResponse response = new PostResponse();
         BeanUtils.copyProperties(entity, response);
+        response.setUsername(user.getUsername());
 
         return response;
     }
 
-    /////////////////EDIT POST//////////////////////
+    // EDIT POST
     public PostResponse editPost(Long id, PostRequest postRequest) {
         if (id == null) {
             throw new IllegalArgumentException("The given id must not be null");
@@ -81,10 +89,12 @@ public class PostService {
         repository.save(entity);
         PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(entity, postResponse);
+        postResponse.setUsername(entity.getUser().getUsername());
+        postResponse.setImageUrl(entity.getImgUrl());
         return postResponse;
     }
 
-    /////////////////DELETE POST//////////////////////
+    // DELETE POST
     public String deletePost(Long id) {
         if (id == null) {
             throw new IllegalArgumentException("The given id must not be null");
@@ -97,7 +107,7 @@ public class PostService {
         }
     }
 
-    /////////////////GET IMAGE URL//////////////////////
+    // GET IMAGE URL
     public String getImageUrl(Long postId) {
         Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
         return imagesBaseUrl + "/" + post.getImgUrl();

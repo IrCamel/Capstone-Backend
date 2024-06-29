@@ -23,7 +23,6 @@ public class Post {
     private String imgUrl;
 
     @ManyToOne
-    @JoinColumn(name = "username")
+    @JoinColumn(name = "user_id")
     private User user;
-
 }

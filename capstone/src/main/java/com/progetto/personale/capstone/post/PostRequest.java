@@ -7,4 +7,5 @@ public class PostRequest {
     private String titolo;
     private String descrizione;
     private String imageUrl;
+    private Long userId;  // Assicurati che userId sia incluso
 }

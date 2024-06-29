@@ -5,6 +5,7 @@ import com.progetto.personale.capstone.post.*;
 import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,14 +30,25 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Post>> findAll(){
-        return ResponseEntity.ok(service.findAll());
+    public ResponseEntity<List<PostResponse>> findAll(){
+        List<PostResponse> posts = service.findAll().stream()
+                .map(post -> {
+                    PostResponse postResponse = new PostResponse();
+                    BeanUtils.copyProperties(post, postResponse);
+                    postResponse.setUsername(post.getUser().getUsername());
+                    postResponse.setImageUrl(post.getImgUrl());
+                    return postResponse;
+                }).toList();
+        return ResponseEntity.ok(posts);
     }
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<PostResponse> createPost(@RequestPart("post") String postJson, @RequestPart("file") MultipartFile file) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         PostRequest postRequest = objectMapper.readValue(postJson, PostRequest.class);
+
+        System.out.println("Received PostRequest: " + postRequest);
+        System.out.println("Received File: " + file.getOriginalFilename());
 
         PostResponse postResponse = service.createPost(postRequest, file);
         return ResponseEntity.ok(postResponse);
