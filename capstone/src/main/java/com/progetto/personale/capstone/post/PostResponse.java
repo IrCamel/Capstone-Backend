@@ -9,20 +9,19 @@ public class PostResponse {
     private String descrizione;
     private String imageUrl;
     private String username;
+    private int likeCount;
 
     // Costruttore senza argomenti
     public PostResponse() {
     }
 
     // Costruttore con argomenti
-    public PostResponse(Long id, String titolo, String descrizione, String imageUrl, String username) {
+    public PostResponse(Long id, String titolo, String descrizione, String imageUrl, String username, int likeCount) {
         this.id = id;
         this.titolo = titolo;
         this.descrizione = descrizione;
         this.imageUrl = imageUrl;
         this.username = username;
-    }
-
-    public PostResponse(String s) {
+        this.likeCount = likeCount;
     }
 }

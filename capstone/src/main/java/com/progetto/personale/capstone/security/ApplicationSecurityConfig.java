@@ -73,6 +73,7 @@ public class ApplicationSecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/post/{id}").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/post/{id}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/post").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/post/{postId}/like/{userId}").authenticated()
 
                                 .requestMatchers(HttpMethod.POST, "/categorie").authenticated()
                 )

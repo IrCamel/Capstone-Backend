@@ -3,6 +3,8 @@ package com.progetto.personale.capstone.post;
 import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -25,4 +27,16 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_likes",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> likedBy = new HashSet<>();
+
+    public int getLikeCount() {
+        return likedBy.size();
+    }
 }

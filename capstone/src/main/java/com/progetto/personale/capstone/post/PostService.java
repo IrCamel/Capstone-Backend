@@ -47,6 +47,7 @@ public class PostService {
         BeanUtils.copyProperties(entity, postResponse);
         postResponse.setUsername(entity.getUser().getUsername());
         postResponse.setImageUrl(entity.getImgUrl());
+        postResponse.setLikeCount(entity.getLikeCount());
         return postResponse;
     }
 
@@ -72,6 +73,7 @@ public class PostService {
         PostResponse response = new PostResponse();
         BeanUtils.copyProperties(entity, response);
         response.setUsername(user.getUsername());
+        response.setLikeCount(entity.getLikeCount());
 
         return response;
     }
@@ -91,6 +93,7 @@ public class PostService {
         BeanUtils.copyProperties(entity, postResponse);
         postResponse.setUsername(entity.getUser().getUsername());
         postResponse.setImageUrl(entity.getImgUrl());
+        postResponse.setLikeCount(entity.getLikeCount());
         return postResponse;
     }
 
@@ -111,5 +114,26 @@ public class PostService {
     public String getImageUrl(Long postId) {
         Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
         return imagesBaseUrl + "/" + post.getImgUrl();
+    }
+
+    // TOGGLE LIKE
+    @Transactional
+    public PostResponse toggleLike(Long postId, Long userId) {
+        Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (post.getLikedBy().contains(user)) {
+            post.getLikedBy().remove(user);
+        } else {
+            post.getLikedBy().add(user);
+        }
+        repository.save(post);
+
+        PostResponse postResponse = new PostResponse();
+        BeanUtils.copyProperties(post, postResponse);
+        postResponse.setUsername(post.getUser().getUsername());
+        postResponse.setImageUrl(post.getImgUrl());
+        postResponse.setLikeCount(post.getLikeCount());
+        return postResponse;
     }
 }

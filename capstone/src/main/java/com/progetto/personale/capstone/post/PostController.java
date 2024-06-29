@@ -2,11 +2,9 @@ package com.progetto.personale.capstone.prodotto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.progetto.personale.capstone.post.*;
-import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +35,7 @@ public class PostController {
                     BeanUtils.copyProperties(post, postResponse);
                     postResponse.setUsername(post.getUser().getUsername());
                     postResponse.setImageUrl(post.getImgUrl());
+                    postResponse.setLikeCount(post.getLikeCount());
                     return postResponse;
                 }).toList();
         return ResponseEntity.ok(posts);
@@ -68,5 +67,10 @@ public class PostController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id){
         return ResponseEntity.ok(service.deletePost(id));
+    }
+
+    @PutMapping("/{postId}/like/{userId}")
+    public ResponseEntity<PostResponse> toggleLike(@PathVariable Long postId, @PathVariable Long userId) {
+        return ResponseEntity.ok(service.toggleLike(postId, userId));
     }
 }
