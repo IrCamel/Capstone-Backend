@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +31,8 @@ public class PostService {
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
     // FIND ALL
-    public List<Post> findAll() {
-        return repository.findAll();
+    public List<PostResponse> findAll() {
+        return repository.findAll().stream().map(this::convertToPostResponse).collect(Collectors.toList());
     }
 
     // FIND BY ID
@@ -43,12 +44,7 @@ public class PostService {
             throw new EntityNotFoundException("Post inesistente");
         }
         Post entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post inesistente"));
-        PostResponse postResponse = new PostResponse();
-        BeanUtils.copyProperties(entity, postResponse);
-        postResponse.setUsername(entity.getUser().getUsername());
-        postResponse.setImageUrl(entity.getImgUrl());
-        postResponse.setLikeCount(entity.getLikeCount());
-        return postResponse;
+        return convertToPostResponse(entity);
     }
 
     // CREATE POST
@@ -70,12 +66,7 @@ public class PostService {
 
         repository.save(entity);
 
-        PostResponse response = new PostResponse();
-        BeanUtils.copyProperties(entity, response);
-        response.setUsername(user.getUsername());
-        response.setLikeCount(entity.getLikeCount());
-
-        return response;
+        return convertToPostResponse(entity);
     }
 
     // EDIT POST
@@ -89,12 +80,7 @@ public class PostService {
         Post entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
         BeanUtils.copyProperties(postRequest, entity);
         repository.save(entity);
-        PostResponse postResponse = new PostResponse();
-        BeanUtils.copyProperties(entity, postResponse);
-        postResponse.setUsername(entity.getUser().getUsername());
-        postResponse.setImageUrl(entity.getImgUrl());
-        postResponse.setLikeCount(entity.getLikeCount());
-        return postResponse;
+        return convertToPostResponse(entity);
     }
 
     // DELETE POST
@@ -129,11 +115,16 @@ public class PostService {
         }
         repository.save(post);
 
+        return convertToPostResponse(post);
+    }
+
+    private PostResponse convertToPostResponse(Post post) {
         PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(post, postResponse);
         postResponse.setUsername(post.getUser().getUsername());
         postResponse.setImageUrl(post.getImgUrl());
         postResponse.setLikeCount(post.getLikeCount());
+        postResponse.setLikedBy(post.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
         return postResponse;
     }
 }

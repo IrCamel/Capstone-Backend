@@ -29,16 +29,7 @@ public class PostController {
 
     @GetMapping
     public ResponseEntity<List<PostResponse>> findAll(){
-        List<PostResponse> posts = service.findAll().stream()
-                .map(post -> {
-                    PostResponse postResponse = new PostResponse();
-                    BeanUtils.copyProperties(post, postResponse);
-                    postResponse.setUsername(post.getUser().getUsername());
-                    postResponse.setImageUrl(post.getImgUrl());
-                    postResponse.setLikeCount(post.getLikeCount());
-                    return postResponse;
-                }).toList();
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(service.findAll());
     }
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
@@ -49,14 +40,12 @@ public class PostController {
         System.out.println("Received PostRequest: " + postRequest);
         System.out.println("Received File: " + file.getOriginalFilename());
 
-        PostResponse postResponse = service.createPost(postRequest, file);
-        return ResponseEntity.ok(postResponse);
+        return ResponseEntity.ok(service.createPost(postRequest, file));
     }
 
     @GetMapping("/image-url/{postId}")
     public ResponseEntity<String> getImageUrl(@PathVariable Long postId) {
-        String imageUrl = service.getImageUrl(postId);
-        return ResponseEntity.ok(imageUrl);
+        return ResponseEntity.ok(service.getImageUrl(postId));
     }
 
     @PutMapping("/{id}")
