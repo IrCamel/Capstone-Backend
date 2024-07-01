@@ -1,14 +1,14 @@
 package com.progetto.personale.capstone.security;
 
-
 import com.cloudinary.Cloudinary;
 import com.progetto.personale.capstone.email.EmailService;
 import com.cloudinary.utils.ObjectUtils;
 import com.progetto.personale.capstone.email.EmailService;
+import com.progetto.personale.capstone.post.Post;
+import com.progetto.personale.capstone.post.PostRepository;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,34 +30,52 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class UserService {
 
-
     private final PasswordEncoder encoder;
-    private final UserRepository usersRepository;
+    private final UserRepository userRepository;
     private final RolesRepository rolesRepository;
     private final AuthenticationManager auth;
     private final JwtUtils jwt;
     private final EmailService emailService;
     private final Cloudinary cloudinary;
+    private final PostRepository postRepository;
 
     @Value("${spring.servlet.multipart.max-file-size}")
     private String maxFileSize;
 
+    public UserService(PasswordEncoder encoder,
+                       UserRepository userRepository,
+                       RolesRepository rolesRepository,
+                       AuthenticationManager auth,
+                       JwtUtils jwt,
+                       EmailService emailService,
+                       Cloudinary cloudinary,
+                       PostRepository postRepository) {
+        this.encoder = encoder;
+        this.userRepository = userRepository;
+        this.rolesRepository = rolesRepository;
+        this.auth = auth;
+        this.jwt = jwt;
+        this.emailService = emailService;
+        this.cloudinary = cloudinary;
+        this.postRepository = postRepository;
+    }
+
+    // ... metodi esistenti ...
 
     public Optional<LoginResponseDTO> login(String username, String password) {
         try {
-            //SI EFFETTUA IL LOGIN
-            //SI CREA UNA AUTENTICAZIONE OVVERO L'OGGETTO DI TIPO AUTHENTICATION
+            // SI EFFETTUA IL LOGIN
+            // SI CREA UNA AUTENTICAZIONE OVVERO L'OGGETTO DI TIPO AUTHENTICATION
             var a = auth.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-            a.getAuthorities(); //SERVE A RECUPERARE I RUOLI/IL RUOLO
+            a.getAuthorities(); // SERVE A RECUPERARE I RUOLI/IL RUOLO
 
-            //SI CREA UN CONTESTO DI SICUREZZA CHE SARA UTILIZZATO IN PIU OCCASIONI
+            // SI CREA UN CONTESTO DI SICUREZZA CHE SARA UTILIZZATO IN PIU OCCASIONI
             SecurityContextHolder.getContext().setAuthentication(a);
 
-            var user = usersRepository.findOneByUsername(username).orElseThrow();
+            var user = userRepository.findOneByUsername(username).orElseThrow();
             var dto = LoginResponseDTO.builder()
                     .withUser(RegisteredUserDTO.builder()
                             .withId(user.getId())
@@ -70,26 +88,26 @@ public class UserService {
                             .build())
                     .build();
 
-            //UTILIZZO DI JWTUTILS PER GENERARE IL TOKEN UTILIZZANDO UNA AUTHENTICATION E LO ASSEGNA ALLA LOGINRESPONSEDTO
+            // UTILIZZO DI JWTUTILS PER GENERARE IL TOKEN UTILIZZANDO UNA AUTHENTICATION E LO ASSEGNA ALLA LOGINRESPONSEDTO
             dto.setToken(jwt.generateToken(a));
 
             return Optional.of(dto);
         } catch (NoSuchElementException e) {
-            //ECCEZIONE LANCIATA SE LO USERNAME E SBAGLIATO E QUINDI L'UTENTE NON VIENE TROVATO
+            // ECCEZIONE LANCIATA SE LO USERNAME E SBAGLIATO E QUINDI L'UTENTE NON VIENE TROVATO
             log.error("User not found", e);
             throw new InvalidLoginException(username, password);
         } catch (AuthenticationException e) {
-            //ECCEZIONE LANCIATA SE LA PASSWORD E SBAGLIATA
+            // ECCEZIONE LANCIATA SE LA PASSWORD E SBAGLIATA
             log.error("Authentication failed", e);
             throw new InvalidLoginException(username, password);
         }
     }
 
-    public RegisteredUserDTO register(RegisterUserDTO register){
-        if(usersRepository.existsByUsername(register.getUsername())){
+    public RegisteredUserDTO register(RegisterUserDTO register) {
+        if (userRepository.existsByUsername(register.getUsername())) {
             throw new EntityExistsException("Utente gia' esistente");
         }
-        if(usersRepository.existsByEmail(register.getEmail())){
+        if (userRepository.existsByEmail(register.getEmail())) {
             throw new EntityExistsException("Email gia' registrata");
         }
         Roles roles = rolesRepository.findById(Roles.ROLES_USER).get();
@@ -97,7 +115,7 @@ public class UserService {
         BeanUtils.copyProperties(register, u);
         u.setPassword(encoder.encode(register.getPassword()));
         u.getRoles().add(roles);
-        usersRepository.save(u);
+        userRepository.save(u);
         RegisteredUserDTO response = new RegisteredUserDTO();
         BeanUtils.copyProperties(u, response);
         response.setRoles(List.of(roles));
@@ -107,11 +125,11 @@ public class UserService {
 
     }
 
-    public RegisteredUserDTO registerAdmin(RegisterUserDTO register){
-        if(usersRepository.existsByUsername(register.getUsername())){
+    public RegisteredUserDTO registerAdmin(RegisterUserDTO register) {
+        if (userRepository.existsByUsername(register.getUsername())) {
             throw new EntityExistsException("Utente gia' esistente");
         }
-        if(usersRepository.existsByEmail(register.getEmail())){
+        if (userRepository.existsByEmail(register.getEmail())) {
             throw new EntityExistsException("Email gia' registrata");
         }
         Roles roles = rolesRepository.findById(Roles.ROLES_ADMIN).get();
@@ -119,7 +137,7 @@ public class UserService {
         BeanUtils.copyProperties(register, u);
         u.setPassword(encoder.encode(register.getPassword()));
         u.getRoles().add(roles);
-        usersRepository.save(u);
+        userRepository.save(u);
         RegisteredUserDTO response = new RegisteredUserDTO();
         BeanUtils.copyProperties(u, response);
         response.setRoles(List.of(roles));
@@ -128,7 +146,7 @@ public class UserService {
     }
 
     public UserResponse findById(Long id) {
-        Optional<User> optionalUser = usersRepository.findById(id);
+        Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
             User entity = optionalUser.get();
             UserResponse userResponse = new UserResponse();
@@ -141,18 +159,13 @@ public class UserService {
     }
 
     public String deleteUser(Long id) {
-        if (usersRepository.existsById(id)) {
-            usersRepository.deleteById(id);
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
             return "Utente eliminato con successo";
         } else {
-            throw new EntityExistsException("L'utente con id +"+  id + "non è stato trovato");
+            throw new EntityExistsException("L'utente con id +" + id + "non è stato trovato");
         }
     }
-
-
-
-
-
 
     @Transactional
     public String uploadAvatar(Long id, MultipartFile image) throws IOException {
@@ -161,7 +174,7 @@ public class UserService {
             throw new FileSizeExceededException("File size exceeds the maximum allowed size");
         }
 
-        Optional<User> optionalUser = usersRepository.findById(id);
+        Optional<User> optionalUser = userRepository.findById(id);
         User user = optionalUser.orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
         String existingPublicId = user.getAvatar();
@@ -174,30 +187,28 @@ public class UserService {
         String url = (String) uploadResult.get("url");
 
         user.setAvatar(publicId);
-        usersRepository.save(user);
+        userRepository.save(user);
 
         return url;
     }
 
-
-// DELETE delete cloudinary file
+    // DELETE delete cloudinary file
 
     @Transactional
     public String deleteAvatar(Long id) throws IOException {
-        Optional<User> optionalUser = usersRepository.findById(id);
+        Optional<User> optionalUser = userRepository.findById(id);
         User user = optionalUser.orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
 
         String publicId = user.getAvatar();
         if (publicId != null && !publicId.isEmpty()) {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
             user.setAvatar(null);
-            usersRepository.save(user);
+            userRepository.save(user);
             return "Avatar deleted successfully";
         } else {
             return "No avatar found for deletion";
         }
     }
-
 
     // PUT update cloudinary file
     @Transactional
@@ -223,6 +234,4 @@ public class UserService {
         }
         return size;
     }
-
-
 }

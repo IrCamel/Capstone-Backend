@@ -1,6 +1,9 @@
 package com.progetto.personale.capstone.post;
 
 import com.cloudinary.Cloudinary;
+import com.progetto.personale.capstone.comment.Comment;
+import com.progetto.personale.capstone.comment.CommentRepository;
+import com.progetto.personale.capstone.comment.CommentResponse;
 import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +27,7 @@ public class PostService {
 
     private final PostRepository repository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
     private final Cloudinary cloudinary;
 
     @Value("${app.images.base-url}")
@@ -32,7 +37,19 @@ public class PostService {
 
     // FIND ALL
     public List<PostResponse> findAll() {
-        return repository.findAll().stream().map(this::convertToPostResponse).collect(Collectors.toList());
+        return repository.findAll().stream().map(post -> {
+            PostResponse postResponse = new PostResponse();
+            BeanUtils.copyProperties(post, postResponse);
+            postResponse.setUsername(post.getUser().getUsername());
+            postResponse.setImageUrl(post.getImgUrl());
+            postResponse.setLikeCount(post.getLikeCount());
+            postResponse.setLikedBy(post.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
+            postResponse.setComments(post.getComments().stream().map(comment -> new CommentResponse(
+                    comment.getId(), comment.getContent(), comment.getUser().getUsername(), comment.getPost().getId()
+            )).collect(Collectors.toList()));
+            postResponse.setSavedBy(post.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
+            return postResponse;
+        }).collect(Collectors.toList());
     }
 
     // FIND BY ID
@@ -44,7 +61,17 @@ public class PostService {
             throw new EntityNotFoundException("Post inesistente");
         }
         Post entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post inesistente"));
-        return convertToPostResponse(entity);
+        PostResponse postResponse = new PostResponse();
+        BeanUtils.copyProperties(entity, postResponse);
+        postResponse.setUsername(entity.getUser().getUsername());
+        postResponse.setImageUrl(entity.getImgUrl());
+        postResponse.setLikeCount(entity.getLikeCount());
+        postResponse.setLikedBy(entity.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        postResponse.setComments(entity.getComments().stream().map(comment -> new CommentResponse(
+                comment.getId(), comment.getContent(), comment.getUser().getUsername(), comment.getPost().getId()
+        )).collect(Collectors.toList()));
+        postResponse.setSavedBy(entity.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        return postResponse;
     }
 
     // CREATE POST
@@ -66,7 +93,12 @@ public class PostService {
 
         repository.save(entity);
 
-        return convertToPostResponse(entity);
+        PostResponse response = new PostResponse();
+        BeanUtils.copyProperties(entity, response);
+        response.setUsername(user.getUsername());
+        response.setLikeCount(entity.getLikeCount());
+
+        return response;
     }
 
     // EDIT POST
@@ -80,7 +112,12 @@ public class PostService {
         Post entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
         BeanUtils.copyProperties(postRequest, entity);
         repository.save(entity);
-        return convertToPostResponse(entity);
+        PostResponse postResponse = new PostResponse();
+        BeanUtils.copyProperties(entity, postResponse);
+        postResponse.setUsername(entity.getUser().getUsername());
+        postResponse.setImageUrl(entity.getImgUrl());
+        postResponse.setLikeCount(entity.getLikeCount());
+        return postResponse;
     }
 
     // DELETE POST
@@ -115,16 +152,64 @@ public class PostService {
         }
         repository.save(post);
 
-        return convertToPostResponse(post);
-    }
-
-    private PostResponse convertToPostResponse(Post post) {
         PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(post, postResponse);
         postResponse.setUsername(post.getUser().getUsername());
         postResponse.setImageUrl(post.getImgUrl());
         postResponse.setLikeCount(post.getLikeCount());
         postResponse.setLikedBy(post.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        postResponse.setComments(post.getComments().stream().map(comment -> new CommentResponse(
+                comment.getId(), comment.getContent(), comment.getUser().getUsername(), comment.getPost().getId()
+        )).collect(Collectors.toList()));
+        postResponse.setSavedBy(post.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        return postResponse;
+    }
+
+
+
+    // ADD COMMENT
+    @Transactional
+    public CommentResponse addComment(Long postId, Long userId, String content) {
+        Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User non trovato"));
+
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setPost(post);
+        comment.setUser(user);
+
+        commentRepository.save(comment);
+
+        return new CommentResponse(comment.getId(), comment.getContent(), user.getUsername(), post.getId());
+    }
+
+    // GET COMMENTS BY POST ID
+    public List<CommentResponse> getCommentsByPostId(Long postId) {
+        List<Comment> comments = commentRepository.findByPostId(postId);
+        return comments.stream()
+                .map(comment -> new CommentResponse(comment.getId(), comment.getContent(), comment.getUser().getUsername(), comment.getPost().getId()))
+                .collect(Collectors.toList());
+    }
+
+
+
+
+    // CONVERT TO POST RESPONSE
+    private PostResponse convertToPostResponse(Post post) {
+        PostResponse postResponse = new PostResponse();
+        BeanUtils.copyProperties(post, postResponse);
+        postResponse.setUsername(post.getUser().getUsername());
+        postResponse.setImageUrl(post.getImgUrl());
+        postResponse.setLikeCount(post.getLikeCount());
+        postResponse.setSaveCount(post.getSaveCount());
+        postResponse.setLikedBy(post.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        postResponse.setSavedBy(post.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        postResponse.setComments(post.getComments().stream().map(comment -> {
+            CommentResponse commentResponse = new CommentResponse();
+            BeanUtils.copyProperties(comment, commentResponse);
+            commentResponse.setUsername(comment.getUser().getUsername());
+            return commentResponse;
+        }).collect(Collectors.toList()));
         return postResponse;
     }
 }

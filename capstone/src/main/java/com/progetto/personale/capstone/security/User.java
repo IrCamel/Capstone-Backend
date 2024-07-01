@@ -1,14 +1,15 @@
 package com.progetto.personale.capstone.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.progetto.personale.capstone.post.Post;
 import com.progetto.personale.capstone.prodotto.Prodotto;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -16,8 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(setterPrefix = "with")
-public class User{
+public class User {
 
+    @Setter
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -29,8 +31,12 @@ public class User{
     private String cognome;
     @Column(nullable = false)
     private Integer eta;
+    @Setter
+    @Getter
     private String username;
     private String email;
+    @Setter
+    @Getter
     @Column(length = 125, nullable = false)
     private String password;
     private String avatar;
@@ -44,29 +50,4 @@ public class User{
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Post> posts = new ArrayList<>();
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
 }

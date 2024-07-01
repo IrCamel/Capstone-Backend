@@ -1,10 +1,11 @@
 package com.progetto.personale.capstone.prodotto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.progetto.personale.capstone.comment.CommentResponse;
 import com.progetto.personale.capstone.post.*;
 import com.progetto.personale.capstone.security.UserService;
+import com.progetto.personale.capstone.security.UserResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +24,12 @@ public class PostController {
     private final PostRepository repository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> findById(@PathVariable Long id){
+    public ResponseEntity<PostResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> findAll(){
+    public ResponseEntity<List<PostResponse>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
@@ -49,12 +50,12 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PostResponse> modify(@PathVariable Long id, @RequestBody PostRequest PostRequest){
-        return ResponseEntity.ok(service.editPost(id, PostRequest));
+    public ResponseEntity<PostResponse> modify(@PathVariable Long id, @RequestBody PostRequest postRequest) {
+        return ResponseEntity.ok(service.editPost(id, postRequest));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id){
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         return ResponseEntity.ok(service.deletePost(id));
     }
 
@@ -62,4 +63,17 @@ public class PostController {
     public ResponseEntity<PostResponse> toggleLike(@PathVariable Long postId, @PathVariable Long userId) {
         return ResponseEntity.ok(service.toggleLike(postId, userId));
     }
+
+
+    @PostMapping("/{postId}/comment/{userId}")
+    public ResponseEntity<CommentResponse> addComment(@PathVariable Long postId, @PathVariable Long userId, @RequestBody String content) {
+        return ResponseEntity.ok(service.addComment(postId, userId, content));
+    }
+
+    @GetMapping("/{postId}/comments")
+    public ResponseEntity<List<CommentResponse>> getCommentsByPostId(@PathVariable Long postId) {
+        return ResponseEntity.ok(service.getCommentsByPostId(postId));
+    }
+
+
 }

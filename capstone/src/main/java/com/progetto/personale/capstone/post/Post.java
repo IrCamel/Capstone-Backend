@@ -1,10 +1,15 @@
 package com.progetto.personale.capstone.post;
 
+import com.progetto.personale.capstone.comment.Comment;
 import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 @Entity
 @Data
@@ -36,7 +41,23 @@ public class Post {
     )
     private Set<User> likedBy = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "post_saves",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> savedBy = new HashSet<>();
+
+    @Getter
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
     public int getLikeCount() {
         return likedBy.size();
+    }
+
+    public int getSaveCount() {
+        return savedBy.size();
     }
 }
