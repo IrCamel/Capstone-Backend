@@ -15,6 +15,7 @@ public class PostResponse {
     private String descrizione;
     private String imageUrl;
     private String username;
+    private Long userId;
     private int likeCount;
     private Set<Long> likedBy;
     private List<CommentResponse> comments;

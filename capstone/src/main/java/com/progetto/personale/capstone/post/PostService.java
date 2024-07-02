@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,11 +36,11 @@ public class PostService {
 
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
-    // FIND ALL
     public List<PostResponse> findAll() {
         return repository.findAll().stream().map(post -> {
             PostResponse postResponse = new PostResponse();
             BeanUtils.copyProperties(post, postResponse);
+            postResponse.setUserId(post.getUser().getId()); // Assicurati di impostare userId
             postResponse.setUsername(post.getUser().getUsername());
             postResponse.setImageUrl(post.getImgUrl());
             postResponse.setLikeCount(post.getLikeCount());
@@ -63,6 +64,7 @@ public class PostService {
         Post entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Post inesistente"));
         PostResponse postResponse = new PostResponse();
         BeanUtils.copyProperties(entity, postResponse);
+        postResponse.setUserId(entity.getUser().getId()); // Assicurati di impostare userId
         postResponse.setUsername(entity.getUser().getUsername());
         postResponse.setImageUrl(entity.getImgUrl());
         postResponse.setLikeCount(entity.getLikeCount());
@@ -120,18 +122,17 @@ public class PostService {
         return postResponse;
     }
 
+
     // DELETE POST
-    public String deletePost(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("The given id must not be null");
+    @Transactional
+    public void deletePost(Long postId, Long userId) throws AccessDeniedException {
+        Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post not found"));
+        if (!post.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("User not authorized to delete this post");
         }
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return "Post eliminato con successo";
-        } else {
-            throw new EntityNotFoundException("Post non trovato");
-        }
+        repository.delete(post);
     }
+
 
     // GET IMAGE URL
     public String getImageUrl(Long postId) {
@@ -164,8 +165,6 @@ public class PostService {
         postResponse.setSavedBy(post.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
         return postResponse;
     }
-
-
 
     // TOGGLE SAVE
     @Transactional
@@ -213,6 +212,20 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    // DELETE COMMENT
+    @Transactional
+    public void deleteComment(Long commentId, Long userId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found"));
+
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("User not authorized to delete this comment");
+        }
+
+        commentRepository.delete(comment);
+    }
+
+
     // CONVERT TO POST RESPONSE
     private PostResponse convertToPostResponse(Post post) {
         PostResponse postResponse = new PostResponse();
@@ -250,5 +263,4 @@ public class PostService {
         logger.info("Saved posts for user {}: {}", userId, savedPosts);
         return savedPosts.stream().map(this::convertToPostResponse).collect(Collectors.toList());
     }
-
 }

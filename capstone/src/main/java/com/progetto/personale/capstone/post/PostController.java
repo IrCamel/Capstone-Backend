@@ -6,6 +6,7 @@ import com.progetto.personale.capstone.post.*;
 import com.progetto.personale.capstone.security.UserService;
 import com.progetto.personale.capstone.security.UserResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -57,10 +59,12 @@ public class PostController {
         return ResponseEntity.ok(service.editPost(id, postRequest));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        return ResponseEntity.ok(service.deletePost(id));
+    @DeleteMapping("/{postId}/user/{userId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId, @PathVariable Long userId) throws AccessDeniedException {
+        service.deletePost(postId, userId);
+        return ResponseEntity.noContent().build();
     }
+
 
     @PutMapping("/{postId}/like/{userId}")
     public ResponseEntity<PostResponse> toggleLike(@PathVariable Long postId, @PathVariable Long userId) {
@@ -82,6 +86,13 @@ public class PostController {
         return ResponseEntity.ok(service.getCommentsByPostId(postId));
     }
 
+    @DeleteMapping("/comment/{commentId}/user/{userId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, @PathVariable Long userId) {
+        service.deleteComment(commentId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+
     @GetMapping("/saved/{userId}")
     public ResponseEntity<List<PostResponse>> getSavedPosts(@PathVariable Long userId) {
         logger.info("Received request to get saved posts for user ID: {}", userId);
@@ -89,5 +100,4 @@ public class PostController {
         logger.info("Returning saved posts: {}", savedPosts);
         return ResponseEntity.ok(savedPosts);
     }
-
 }

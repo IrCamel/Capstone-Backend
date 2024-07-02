@@ -70,12 +70,13 @@ public class ApplicationSecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/prodotti/{id}").authenticated()
 
                                 .requestMatchers(HttpMethod.POST, "/post").authenticated()
-                                .requestMatchers(HttpMethod.DELETE, "/post/{id}").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/post/{postId}/user/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/post/{id}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/post").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/post/{postId}/like/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/post/{postId}/comment/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/post/{postId}/comments").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "post/comment/{commentId}/user/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.PUT,"post/{postId}/save/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.GET,"post/saved/{userId}").authenticated()
 
