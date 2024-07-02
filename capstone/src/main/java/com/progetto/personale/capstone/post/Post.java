@@ -6,10 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Data
@@ -37,27 +34,43 @@ public class Post {
     @JoinTable(
             name = "post_likes",
             joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> likedBy = new HashSet<>();
+
 
     @ManyToMany
     @JoinTable(
             name = "post_saves",
             joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> savedBy = new HashSet<>();
 
+    @Override
+    public String toString() {
+        return "Post{id=" + id + ", titolo='" + titolo + "'}";
+    }
     @Getter
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
     public int getLikeCount() {
-        return likedBy.size();
+        return likedBy != null ? likedBy.size() : 0;
     }
 
     public int getSaveCount() {
-        return savedBy.size();
+        return savedBy != null ? savedBy.size() : 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Post post = (Post) o;
+        return Objects.equals(id, post.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

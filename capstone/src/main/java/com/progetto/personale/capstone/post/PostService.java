@@ -167,6 +167,28 @@ public class PostService {
 
 
 
+    // TOGGLE SAVE
+    @Transactional
+    public PostResponse toggleSave(Long postId, Long userId) {
+        Post post = repository.findById(postId).orElseThrow(() -> new EntityNotFoundException("Post non trovato"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (post.getSavedBy().contains(user)) {
+            post.getSavedBy().remove(user);
+        } else {
+            post.getSavedBy().add(user);
+        }
+        repository.save(post);
+
+        PostResponse postResponse = new PostResponse();
+        BeanUtils.copyProperties(post, postResponse);
+        postResponse.setUsername(post.getUser().getUsername());
+        postResponse.setImageUrl(post.getImgUrl());
+        postResponse.setLikeCount(post.getLikeCount());
+        postResponse.setSavedBy(post.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        return postResponse;
+    }
+
     // ADD COMMENT
     @Transactional
     public CommentResponse addComment(Long postId, Long userId, String content) {
@@ -191,9 +213,6 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-
-
-
     // CONVERT TO POST RESPONSE
     private PostResponse convertToPostResponse(Post post) {
         PostResponse postResponse = new PostResponse();
@@ -212,4 +231,24 @@ public class PostService {
         }).collect(Collectors.toList()));
         return postResponse;
     }
+
+    public List<PostResponse> getSavedPosts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        List<PostResponse> savedPosts = user.getSavedPosts().stream()
+                .map(this::convertToPostResponse)
+                .collect(Collectors.toList());
+
+        System.out.println("Saved posts for user " + userId + ": " + savedPosts);
+        return savedPosts;
+    }
+
+    public List<PostResponse> getSavedPostsByUserId(Long userId) {
+        logger.info("Finding saved posts for user: {}", userId);
+        List<Post> savedPosts = repository.findAllSavedPostsByUserId(userId);
+        logger.info("Saved posts for user {}: {}", userId, savedPosts);
+        return savedPosts.stream().map(this::convertToPostResponse).collect(Collectors.toList());
+    }
+
 }

@@ -6,10 +6,7 @@ import com.progetto.personale.capstone.prodotto.Prodotto;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -19,35 +16,53 @@ import java.util.Set;
 @Builder(setterPrefix = "with")
 public class User {
 
-    @Setter
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(length = 50, nullable = false)
     private String nome;
+
     @Column(length = 50, nullable = false)
     private String cognome;
+
     @Column(nullable = false)
     private Integer eta;
-    @Setter
-    @Getter
+
     private String username;
+
     private String email;
-    @Setter
-    @Getter
+
     @Column(length = 125, nullable = false)
     private String password;
+
     private String avatar;
+
     @ManyToMany(fetch = FetchType.EAGER)
     private final List<Roles> roles = new ArrayList<>();
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Prodotto> prodotti = new ArrayList<>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Post> posts = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "savedBy")
+    private Set<Post> savedPosts;
+
+    @Override
+    public String toString() {
+        return "User{id=" + id + ", username='" + username + "'}";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

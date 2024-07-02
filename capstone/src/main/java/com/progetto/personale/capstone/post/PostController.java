@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +24,7 @@ public class PostController {
     private final PostService service;
     private final UserService userService;
     private final PostRepository repository;
+    private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> findById(@PathVariable Long id) {
@@ -64,6 +67,10 @@ public class PostController {
         return ResponseEntity.ok(service.toggleLike(postId, userId));
     }
 
+    @PutMapping("/{postId}/save/{userId}")
+    public ResponseEntity<PostResponse> toggleSave(@PathVariable Long postId, @PathVariable Long userId) {
+        return ResponseEntity.ok(service.toggleSave(postId, userId));
+    }
 
     @PostMapping("/{postId}/comment/{userId}")
     public ResponseEntity<CommentResponse> addComment(@PathVariable Long postId, @PathVariable Long userId, @RequestBody String content) {
@@ -75,5 +82,12 @@ public class PostController {
         return ResponseEntity.ok(service.getCommentsByPostId(postId));
     }
 
+    @GetMapping("/saved/{userId}")
+    public ResponseEntity<List<PostResponse>> getSavedPosts(@PathVariable Long userId) {
+        logger.info("Received request to get saved posts for user ID: {}", userId);
+        List<PostResponse> savedPosts = service.getSavedPostsByUserId(userId);
+        logger.info("Returning saved posts: {}", savedPosts);
+        return ResponseEntity.ok(savedPosts);
+    }
 
 }

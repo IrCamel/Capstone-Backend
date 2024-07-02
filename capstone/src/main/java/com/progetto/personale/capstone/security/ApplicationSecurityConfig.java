@@ -76,8 +76,8 @@ public class ApplicationSecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/post/{postId}/like/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/post/{postId}/comment/{userId}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/post/{postId}/comments").authenticated()
-                                .requestMatchers(HttpMethod.PUT, "/post/{postId}/save/{userId}").authenticated()
-                                .requestMatchers(HttpMethod.GET, "post/saved/{userId}").authenticated()
+                                .requestMatchers(HttpMethod.PUT,"post/{postId}/save/{userId}").authenticated()
+                                .requestMatchers(HttpMethod.GET,"post/saved/{userId}").authenticated()
 
                                 .requestMatchers(HttpMethod.POST, "/categorie").authenticated()
                 )

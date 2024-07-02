@@ -1,11 +1,13 @@
 package com.progetto.personale.capstone.security;
 
 import com.cloudinary.Cloudinary;
+import com.progetto.personale.capstone.comment.CommentResponse;
 import com.progetto.personale.capstone.email.EmailService;
 import com.cloudinary.utils.ObjectUtils;
 import com.progetto.personale.capstone.email.EmailService;
 import com.progetto.personale.capstone.post.Post;
 import com.progetto.personale.capstone.post.PostRepository;
+import com.progetto.personale.capstone.post.PostResponse;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -233,5 +236,32 @@ public class UserService {
                 break;
         }
         return size;
+    }
+
+    public List<PostResponse> getSavedPosts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return user.getSavedPosts().stream()
+                .map(this::convertToPostResponse)
+                .collect(Collectors.toList());
+    }
+
+    private PostResponse convertToPostResponse(Post post) {
+        PostResponse postResponse = new PostResponse();
+        BeanUtils.copyProperties(post, postResponse);
+        postResponse.setUsername(post.getUser().getUsername());
+        postResponse.setImageUrl(post.getImgUrl());
+        postResponse.setLikeCount(post.getLikeCount());
+        postResponse.setSaveCount(post.getSaveCount());
+        postResponse.setLikedBy(post.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        postResponse.setSavedBy(post.getSavedBy().stream().map(User::getId).collect(Collectors.toSet()));
+        postResponse.setComments(post.getComments().stream().map(comment -> {
+            CommentResponse commentResponse = new CommentResponse();
+            BeanUtils.copyProperties(comment, commentResponse);
+            commentResponse.setUsername(comment.getUser().getUsername());
+            return commentResponse;
+        }).collect(Collectors.toList()));
+        return postResponse;
     }
 }

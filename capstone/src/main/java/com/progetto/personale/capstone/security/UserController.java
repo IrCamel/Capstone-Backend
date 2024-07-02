@@ -2,6 +2,7 @@
 package com.progetto.personale.capstone.security;
 
 import com.cloudinary.Cloudinary;
+import com.progetto.personale.capstone.post.PostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -104,5 +105,10 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Avatar not found");
         }
+    }
+
+    @GetMapping("/{userId}/saved-posts")
+    public ResponseEntity<List<PostResponse>> getSavedPosts(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getSavedPosts(userId));
     }
 }
