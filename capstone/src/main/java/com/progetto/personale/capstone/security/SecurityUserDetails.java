@@ -49,4 +49,12 @@ public class SecurityUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
+    public Object getId() {
+        return user.getId();
+    }
+
+    public Object getRoles() {
+        return user.getRoles();
+    }
 }

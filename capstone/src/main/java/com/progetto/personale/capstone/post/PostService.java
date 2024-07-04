@@ -44,6 +44,7 @@ public class PostService {
             postResponse.setUsername(post.getUser().getUsername());
             postResponse.setImageUrl(post.getImgUrl());
             postResponse.setLikeCount(post.getLikeCount());
+            postResponse.setUserAvatar(post.getUser().getAvatar());
             postResponse.setLikedBy(post.getLikedBy().stream().map(User::getId).collect(Collectors.toSet()));
             postResponse.setComments(post.getComments().stream().map(comment -> new CommentResponse(
                     comment.getId(), comment.getContent(), comment.getUser().getUsername(), comment.getPost().getId()

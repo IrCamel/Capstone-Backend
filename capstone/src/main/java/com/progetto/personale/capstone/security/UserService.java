@@ -4,7 +4,6 @@ import com.cloudinary.Cloudinary;
 import com.progetto.personale.capstone.comment.CommentResponse;
 import com.progetto.personale.capstone.email.EmailService;
 import com.cloudinary.utils.ObjectUtils;
-import com.progetto.personale.capstone.email.EmailService;
 import com.progetto.personale.capstone.post.Post;
 import com.progetto.personale.capstone.post.PostRepository;
 import com.progetto.personale.capstone.post.PostResponse;
@@ -16,13 +15,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -46,6 +45,12 @@ public class UserService {
 
     @Value("${spring.servlet.multipart.max-file-size}")
     private String maxFileSize;
+//    private Process logger;
+
+    @Value("${app.images.base-url}")
+    private String imagesBaseUrl;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
 
     public UserService(PasswordEncoder encoder,
                        UserRepository userRepository,
@@ -65,67 +70,59 @@ public class UserService {
         this.postRepository = postRepository;
     }
 
-    // ... metodi esistenti ...
 
     public Optional<LoginResponseDTO> login(String username, String password) {
         try {
-            // SI EFFETTUA IL LOGIN
-            // SI CREA UNA AUTENTICAZIONE OVVERO L'OGGETTO DI TIPO AUTHENTICATION
             var a = auth.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-
-            a.getAuthorities(); // SERVE A RECUPERARE I RUOLI/IL RUOLO
-
-            // SI CREA UN CONTESTO DI SICUREZZA CHE SARA UTILIZZATO IN PIU OCCASIONI
             SecurityContextHolder.getContext().setAuthentication(a);
 
             var user = userRepository.findOneByUsername(username).orElseThrow();
             var dto = LoginResponseDTO.builder()
                     .withUser(RegisteredUserDTO.builder()
                             .withId(user.getId())
-                            .withNome(user.getNome())
-                            .withCognome(user.getCognome())
-                            .withEta(user.getEta())
-                            .withEmail(user.getEmail())
                             .withRoles(user.getRoles())
                             .withUsername(user.getUsername())
+                            .withAvatar(user.getAvatar())
                             .build())
+                    .withToken(jwt.generateToken(a))
                     .build();
 
-            // UTILIZZO DI JWTUTILS PER GENERARE IL TOKEN UTILIZZANDO UNA AUTHENTICATION E LO ASSEGNA ALLA LOGINRESPONSEDTO
-            dto.setToken(jwt.generateToken(a));
-
             return Optional.of(dto);
-        } catch (NoSuchElementException e) {
-            // ECCEZIONE LANCIATA SE LO USERNAME E SBAGLIATO E QUINDI L'UTENTE NON VIENE TROVATO
-            log.error("User not found", e);
-            throw new InvalidLoginException(username, password);
-        } catch (AuthenticationException e) {
-            // ECCEZIONE LANCIATA SE LA PASSWORD E SBAGLIATA
+        } catch (NoSuchElementException | AuthenticationException e) {
             log.error("Authentication failed", e);
             throw new InvalidLoginException(username, password);
         }
     }
 
-    public RegisteredUserDTO register(RegisterUserDTO register) {
+
+    @Transactional
+    public RegisteredUserDTO register(RegisterUserDTO register, MultipartFile file) throws IOException {
+        logger.info("Registering user: {}", register.getUsername());
+        var uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                com.cloudinary.utils.ObjectUtils.asMap("public_id", register.getNome() + "avatar"));
+        String url = uploadResult.get("url").toString();
+
         if (userRepository.existsByUsername(register.getUsername())) {
-            throw new EntityExistsException("Utente gia' esistente");
+            throw new EntityExistsException("Utente già esistente");
         }
         if (userRepository.existsByEmail(register.getEmail())) {
-            throw new EntityExistsException("Email gia' registrata");
+            throw new EntityExistsException("Email già registrata");
         }
+
         Roles roles = rolesRepository.findById(Roles.ROLES_USER).get();
         User u = new User();
+        u.setAvatar(url);
         BeanUtils.copyProperties(register, u);
         u.setPassword(encoder.encode(register.getPassword()));
         u.getRoles().add(roles);
         userRepository.save(u);
+
         RegisteredUserDTO response = new RegisteredUserDTO();
         BeanUtils.copyProperties(u, response);
         response.setRoles(List.of(roles));
         emailService.sendWelcomeEmail(u.getEmail());
 
         return response;
-
     }
 
     public RegisteredUserDTO registerAdmin(RegisterUserDTO register) {

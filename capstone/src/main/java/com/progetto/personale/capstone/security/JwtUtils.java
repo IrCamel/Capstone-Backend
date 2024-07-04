@@ -28,6 +28,9 @@ public class JwtUtils {
         var user = (SecurityUserDetails) auth.getPrincipal();
         return Jwts.builder()
                 .setSubject(user.getUsername())
+                .claim("id", user.getId())
+                .claim("roles", user.getRoles())
+                .setSubject(user.getUsername())
                 .setIssuedAt(new Date())
                 .setIssuer("MySpringApplication")
                 .setExpiration(new Date(new Date().getTime() + expirationMs))

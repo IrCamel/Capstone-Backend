@@ -29,13 +29,16 @@ public class User {
     @Column(nullable = false)
     private Integer eta;
 
+    @Column(nullable = false)
     private String username;
 
+    @Column(nullable = false)
     private String email;
 
     @Column(length = 125, nullable = false)
     private String password;
 
+    @Column(nullable = false)
     private String avatar;
 
     @ManyToMany(fetch = FetchType.EAGER)

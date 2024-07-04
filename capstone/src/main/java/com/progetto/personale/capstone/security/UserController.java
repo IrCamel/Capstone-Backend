@@ -2,9 +2,11 @@
 package com.progetto.personale.capstone.security;
 
 import com.cloudinary.Cloudinary;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.progetto.personale.capstone.post.PostResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -28,23 +30,17 @@ public class UserController {
     @Autowired
     private Cloudinary cloudinary;
 
-    @PostMapping
-    public ResponseEntity<RegisteredUserDTO> register(@RequestBody @Validated RegisterUserModel model, BindingResult validator){
-        if (validator.hasErrors()) {
-            throw new ApiValidationException(validator.getAllErrors());
-        }
-        var registeredUser = service.register(
-                RegisterUserDTO.builder()
-                        .withNome(model.nome())
-                        .withCognome(model.cognome())
-                        .withEta(model.eta())
-                        .withUsername(model.username())
-                        .withEmail(model.email())
-                        .withPassword(model.password())
-                        .build());
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<RegisteredUserDTO> register(@RequestPart("user") String postJson, @RequestPart("file") MultipartFile file) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        RegisterUserDTO dto = objectMapper.readValue(postJson, RegisterUserDTO.class);
 
-        return  new ResponseEntity<> (registeredUser, HttpStatus.OK);
+        System.out.println("Received PostRequest: " + dto);
+        System.out.println("Received File: " + file.getOriginalFilename());
+
+        return ResponseEntity.ok(service.register(dto, file));
     }
+
 
     @PostMapping("login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Validated LoginModel model, BindingResult validator) {
