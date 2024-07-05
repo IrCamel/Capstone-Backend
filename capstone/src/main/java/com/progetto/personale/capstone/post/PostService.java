@@ -82,7 +82,7 @@ public class PostService {
     public PostResponse createPost(PostRequest postRequest, MultipartFile file) throws IOException {
         logger.info("Creating post with title: {}", postRequest.getTitolo());
         var uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                com.cloudinary.utils.ObjectUtils.asMap("public_id", postRequest.getTitolo() + "_avatar"));
+                com.cloudinary.utils.ObjectUtils.asMap("public_id", postRequest.getTitolo() + "_image"));
         String url = uploadResult.get("url").toString();
 
         Post entity = new Post();
@@ -99,6 +99,8 @@ public class PostService {
         PostResponse response = new PostResponse();
         BeanUtils.copyProperties(entity, response);
         response.setUsername(user.getUsername());
+        response.setUserAvatar(user.getAvatar()); // Include user avatar in the response
+        response.setImageUrl(url); // Set the image URL
         response.setLikeCount(entity.getLikeCount());
 
         return response;
