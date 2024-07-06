@@ -2,6 +2,7 @@ package com.progetto.personale.capstone.prodotto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
@@ -29,11 +30,13 @@ public class Prodotto {
     private String imgUrl;
 
     @ManyToOne
-    @JoinColumn(name = "nome_categoria")  // Definire la colonna che conterrà il riferimento alla categoria
+    @JoinColumn(name = "nome_categoria")
+    @JsonManagedReference // Prevent reference loop
     private Categoria categoria;
 
     @ManyToOne
     @JoinColumn(name = "username")
+    @JsonManagedReference // Prevent reference loop
     private User user;
 
     public Categoria getCategoria() {
@@ -44,4 +47,3 @@ public class Prodotto {
         this.categoria = categoria;
     }
 }
-

@@ -1,4 +1,3 @@
-
 package com.progetto.personale.capstone.security;
 
 import com.cloudinary.Cloudinary;
@@ -8,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -41,11 +42,10 @@ public class UserController {
         return ResponseEntity.ok(service.register(dto, file));
     }
 
-
     @PostMapping("login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Validated LoginModel model, BindingResult validator) {
         if (validator.hasErrors()) {
-            throw  new ApiValidationException(validator.getAllErrors());
+            throw new ApiValidationException(validator.getAllErrors());
         }
         return new ResponseEntity<>(service.login(model.username(), model.password()).orElseThrow(), HttpStatus.OK);
     }
@@ -57,7 +57,10 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable Long id) {
-        return service.findById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        SecurityUserDetails currentUserDetails = (SecurityUserDetails) authentication.getPrincipal();
+        Long currentUserId = (Long) currentUserDetails.getId();
+        return service.findById(id, currentUserId);
     }
 
     @DeleteMapping("/{id}")
@@ -66,18 +69,14 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
     @PostMapping("/{username}/avatar")
     public ResponseEntity<String> uploadAvatar(@PathVariable String username, @RequestParam("file") MultipartFile file) {
         try {
-            // Carica l'immagine su Cloudinary
             var uploadResult = cloudinary.uploader().upload(file.getBytes(),
                     com.cloudinary.utils.ObjectUtils.asMap("public_id", username + "_avatar"));
 
-            // Recupera l'URL dell'immagine
             String url = uploadResult.get("url").toString();
 
-            // Aggiorna l'utente con l'URL dell'immagine avatar
             Optional<User> userOptional = usersRepository.findOneByUsername(username);
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
@@ -106,5 +105,27 @@ public class UserController {
     @GetMapping("/{userId}/saved-posts")
     public ResponseEntity<List<PostResponse>> getSavedPosts(@PathVariable Long userId) {
         return ResponseEntity.ok(service.getSavedPosts(userId));
+    }
+
+    @PostMapping("/{followerId}/follow/{followeeId}")
+    public ResponseEntity<FollowResponseDTO> toggleFollow(@PathVariable Long followerId, @PathVariable Long followeeId) {
+        FollowResponseDTO response = service.toggleFollow(followerId, followeeId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{followerId}/unfollow/{followingId}")
+    public ResponseEntity<String> unfollowUser(@PathVariable Long followerId, @PathVariable Long followingId) {
+        service.toggleFollow(followerId, followingId);
+        return ResponseEntity.ok("Unfollowed successfully");
+    }
+
+    @GetMapping("/{userId}/followers")
+    public ResponseEntity<List<UserResponse>> getFollowers(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getFollowers(userId));
+    }
+
+    @GetMapping("/{userId}/following")
+    public ResponseEntity<List<UserResponse>> getFollowing(@PathVariable Long userId) {
+        return ResponseEntity.ok(service.getFollowing(userId));
     }
 }

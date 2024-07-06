@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,12 +46,11 @@ public class UserService {
 
     @Value("${spring.servlet.multipart.max-file-size}")
     private String maxFileSize;
-//    private Process logger;
 
     @Value("${app.images.base-url}")
     private String imagesBaseUrl;
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public UserService(PasswordEncoder encoder,
                        UserRepository userRepository,
@@ -70,7 +70,6 @@ public class UserService {
         this.postRepository = postRepository;
     }
 
-
     public Optional<LoginResponseDTO> login(String username, String password) {
         try {
             var a = auth.authenticate(new UsernamePasswordAuthenticationToken(username, password));
@@ -89,11 +88,10 @@ public class UserService {
 
             return Optional.of(dto);
         } catch (NoSuchElementException | AuthenticationException e) {
-            log.error("Authentication failed", e);
+            logger.error("Authentication failed", e);
             throw new InvalidLoginException(username, password);
         }
     }
-
 
     @Transactional
     public RegisteredUserDTO register(RegisterUserDTO register, MultipartFile file) throws IOException {
@@ -145,15 +143,12 @@ public class UserService {
 
     }
 
-    public UserResponse findById(Long id) {
+    public UserResponse findById(Long id, Long currentUserId) {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
             User entity = optionalUser.get();
-            UserResponse userResponse = new UserResponse();
-            BeanUtils.copyProperties(entity, userResponse);
-            return userResponse;
+            return convertToUserResponse(entity, currentUserId);
         } else {
-            // Gestione del caso in cui l'utente non sia trovato
             throw new EntityNotFoundException("L'utente con id " + id + " non è stato trovato");
         }
     }
@@ -192,8 +187,6 @@ public class UserService {
         return url;
     }
 
-    // DELETE delete cloudinary file
-
     @Transactional
     public String deleteAvatar(Long id) throws IOException {
         Optional<User> optionalUser = userRepository.findById(id);
@@ -210,7 +203,6 @@ public class UserService {
         }
     }
 
-    // PUT update cloudinary file
     @Transactional
     public String updateAvatar(Long id, MultipartFile updatedImage) throws IOException {
         deleteAvatar(id);
@@ -260,5 +252,84 @@ public class UserService {
             return commentResponse;
         }).collect(Collectors.toList()));
         return postResponse;
+    }
+
+    @Transactional
+    public UserResponse followUser(Long followerId, Long followeeId) {
+        User follower = userRepository.findById(followerId)
+                .orElseThrow(() -> new EntityNotFoundException("Follower not found with id: " + followerId));
+        User followee = userRepository.findById(followeeId)
+                .orElseThrow(() -> new EntityNotFoundException("Followee not found with id: " + followeeId));
+
+        if (follower.getFollowing().contains(followee)) {
+            follower.getFollowing().remove(followee);
+            followee.getFollowers().remove(follower);
+        } else {
+            follower.getFollowing().add(followee);
+            followee.getFollowers().add(follower);
+        }
+
+        userRepository.save(follower);
+        userRepository.save(followee);
+
+        return convertToUserResponse(followee, followerId);
+    }
+
+    @Transactional
+    public FollowResponseDTO toggleFollow(Long followerId, Long followeeId) {
+        if (followerId.equals(followeeId)) {
+            throw new IllegalArgumentException("A user cannot follow themselves.");
+        }
+
+        User follower = userRepository.findById(followerId)
+                .orElseThrow(() -> new EntityNotFoundException("Follower not found"));
+        User followee = userRepository.findById(followeeId)
+                .orElseThrow(() -> new EntityNotFoundException("Followee not found"));
+
+        boolean isFollowing = follower.getFollowing().contains(followee);
+        if (isFollowing) {
+            follower.getFollowing().remove(followee);
+            followee.getFollowers().remove(follower);
+        } else {
+            follower.getFollowing().add(followee);
+            followee.getFollowers().add(follower);
+        }
+
+        userRepository.save(follower);
+        userRepository.save(followee);
+
+        int followersCount = followee.getFollowers().size();
+        int followingCount = follower.getFollowing().size();
+
+        logger.info("User {} now has {} followers and {} following", followee.getUsername(), followersCount, followingCount);
+
+        return new FollowResponseDTO(followersCount, followingCount, !isFollowing);
+    }
+
+
+    public List<UserResponse> getFollowers(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return user.getFollowers().stream()
+                .map(follower -> convertToUserResponse(follower, userId))
+                .collect(Collectors.toList());
+    }
+
+    public List<UserResponse> getFollowing(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return user.getFollowing().stream()
+                .map(following -> convertToUserResponse(following, userId))
+                .collect(Collectors.toList());
+    }
+
+    private UserResponse convertToUserResponse(User user, Long currentUserId) {
+        UserResponse userResponse = new UserResponse();
+        BeanUtils.copyProperties(user, userResponse);
+        userResponse.setFollowersCount(user.getFollowers().size());
+        userResponse.setFollowingCount(user.getFollowing().size());
+        userResponse.setFollowedByCurrentUser(user.getFollowers().stream()
+                .anyMatch(follower -> follower.getId().equals(currentUserId)));
+        return userResponse;
     }
 }

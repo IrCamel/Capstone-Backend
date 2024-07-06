@@ -2,7 +2,6 @@ package com.progetto.personale.capstone.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.progetto.personale.capstone.post.Post;
-import com.progetto.personale.capstone.prodotto.Prodotto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -49,7 +48,23 @@ public class User {
     private List<Post> posts = new ArrayList<>();
 
     @ManyToMany(mappedBy = "savedBy")
-    private Set<Post> savedPosts;
+    private Set<Post> savedPosts = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_followers",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "follower_id")
+    )
+    private Set<User> followers = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_following",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "following_id")
+    )
+    private Set<User> following = new HashSet<>();
 
     @Override
     public String toString() {

@@ -62,6 +62,10 @@ public class ApplicationSecurityConfig {
                                 .requestMatchers(HttpMethod.PATCH, "/users/{id}").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/users/{id}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/users/{id}").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/users/{followerId}/follow/{followeeId}").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/users/{followerId}/unfollow/{followingId}").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/users/{userId}/followers").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/users/{userId}/following").authenticated()
 
                                 .requestMatchers(HttpMethod.POST, "/prodotti").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/prodotti/{id}").authenticated()
@@ -81,6 +85,7 @@ public class ApplicationSecurityConfig {
                                 .requestMatchers(HttpMethod.GET,"post/saved/{userId}").authenticated()
 
                                 .requestMatchers(HttpMethod.POST, "/categorie").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/categorie").authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,12 +1,9 @@
 package com.progetto.personale.capstone.prodotto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,12 +19,12 @@ public class ProdottoController {
     ProdottoService service;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response> findById(@PathVariable Long id){
+    public ResponseEntity<Response> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Prodotto>> findAll(){
+    public ResponseEntity<List<CompleteResponse>> findAll() {
         return ResponseEntity.ok(service.findAll());
     }
 
@@ -40,15 +37,13 @@ public class ProdottoController {
         return ResponseEntity.ok(response);
     }
 
-
-
     @PutMapping("/{id}")
-    public ResponseEntity<Response> modify(@PathVariable Long id, @RequestBody Request request){
+    public ResponseEntity<Response> modify(@PathVariable Long id, @RequestBody Request request) {
         return ResponseEntity.ok(service.editProdotto(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id){
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         return ResponseEntity.ok(service.deleteProdotto(id));
     }
 }
