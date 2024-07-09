@@ -3,6 +3,10 @@ package com.progetto.personale.capstone.prodotto;
 import com.cloudinary.Cloudinary;
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.categoria.CategoriaRepository;
+import com.progetto.personale.capstone.prodotto.CompleteResponse;
+import com.progetto.personale.capstone.prodotto.Prodotto;
+import com.progetto.personale.capstone.prodotto.ProdottoRepository;
+import com.progetto.personale.capstone.prodotto.Request;
 import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,12 +35,9 @@ public class ProdottoService {
                 .collect(Collectors.toList());
     }
 
-    public Response findById(Long id) {
+    public CompleteResponse findById(Long id) {
         Prodotto entity = repository.findByIdWithUser(id).orElseThrow(() -> new EntityNotFoundException("Prodotto inesistente"));
-        Response prodottoResponse = new Response();
-        BeanUtils.copyProperties(entity, prodottoResponse);
-        prodottoResponse.setUsername(entity.getUser().getUsername());
-        return prodottoResponse;
+        return convertToResponse(entity);
     }
 
     @Transactional
@@ -59,7 +60,7 @@ public class ProdottoService {
         return convertToCompleteResponse(entity);
     }
 
-    public Response editProdotto(Long id, Request prodottoRequest) {
+    public CompleteResponse editProdotto(Long id, Request prodottoRequest) {
         if (!repository.existsById(id)) {
             throw new EntityNotFoundException("Prodotto non trovato");
         }
@@ -67,10 +68,7 @@ public class ProdottoService {
         BeanUtils.copyProperties(prodottoRequest, entity);
         repository.save(entity);
 
-        Response prodottoResponse = new Response();
-        BeanUtils.copyProperties(entity, prodottoResponse);
-
-        return prodottoResponse;
+        return convertToResponse(entity);
     }
 
     public String deleteProdotto(Long id) {
@@ -86,7 +84,21 @@ public class ProdottoService {
         CompleteResponse response = new CompleteResponse();
         BeanUtils.copyProperties(prodotto, response);
         response.setUsername(prodotto.getUser().getUsername());
-        response.setCategoria(List.of(prodotto.getCategoria())); // or however you want to set this field
+        response.setAvatar(prodotto.getUser().getAvatar()); // Aggiungi questa linea per l'avatar
+        response.setCategoria(List.of(prodotto.getCategoria()));
         return response;
+    }
+
+    private CompleteResponse convertToResponse(Prodotto prodotto) {
+        CompleteResponse response = new CompleteResponse();
+        BeanUtils.copyProperties(prodotto, response);
+        response.setUsername(prodotto.getUser().getUsername());
+        response.setAvatar(prodotto.getUser().getAvatar()); // Aggiungi questa linea per l'avatar
+        return response;
+    }
+
+    // Metodo per caricare tutte le categorie
+    public List<Categoria> getCategorie() {
+        return categoriaRepository.findAll();
     }
 }

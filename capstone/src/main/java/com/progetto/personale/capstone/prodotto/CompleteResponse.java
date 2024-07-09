@@ -13,5 +13,6 @@ public class CompleteResponse {
     private Integer prezzo;
     private String imgUrl;
     private String username;
+    private String avatar; // Aggiungi questo campo
     private List<Categoria> categoria;
 }

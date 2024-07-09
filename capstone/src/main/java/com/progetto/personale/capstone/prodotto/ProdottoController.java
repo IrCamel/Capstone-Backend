@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,11 +16,14 @@ import java.util.List;
 @RequestMapping("/prodotti")
 public class ProdottoController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProdottoController.class);
+
+
     @Autowired
     ProdottoService service;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Response> findById(@PathVariable Long id) {
+    public ResponseEntity<CompleteResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
@@ -38,7 +42,7 @@ public class ProdottoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response> modify(@PathVariable Long id, @RequestBody Request request) {
+    public ResponseEntity<CompleteResponse> modify(@PathVariable Long id, @RequestBody Request request) {
         return ResponseEntity.ok(service.editProdotto(id, request));
     }
 

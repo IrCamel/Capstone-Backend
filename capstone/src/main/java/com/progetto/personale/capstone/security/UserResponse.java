@@ -15,6 +15,7 @@ public class UserResponse {
     private String cognome;
     private String username;
     private String email;
+    private String avatar;
     @Setter
     @Getter
     private List<PostResponse> savedPosts;

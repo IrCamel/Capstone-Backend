@@ -1,13 +1,11 @@
 package com.progetto.personale.capstone.categoria;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.progetto.personale.capstone.prodotto.Prodotto;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -18,13 +16,10 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @JsonProperty("nome")
     @Column(length = 50, unique = true)
     private String nomeCategoria;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "categoria")
-    private Set<Prodotto> prodotti = new HashSet<>();
-
-    // Getter e setter
+    @JsonBackReference
+    private List<Prodotto> prodotti;
 }

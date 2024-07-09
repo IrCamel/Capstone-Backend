@@ -147,7 +147,12 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findById(id);
         if (optionalUser.isPresent()) {
             User entity = optionalUser.get();
-            return convertToUserResponse(entity, currentUserId);
+            UserResponse userResponse = new UserResponse();
+            BeanUtils.copyProperties(entity, userResponse);
+            userResponse.setFollowersCount(entity.getFollowers().size());
+            userResponse.setFollowingCount(entity.getFollowing().size());
+            userResponse.setAvatar(entity.getAvatar()); // Aggiungi questa linea
+            return userResponse;
         } else {
             throw new EntityNotFoundException("L'utente con id " + id + " non è stato trovato");
         }

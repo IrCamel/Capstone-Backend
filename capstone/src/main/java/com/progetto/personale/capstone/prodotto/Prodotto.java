@@ -1,8 +1,6 @@
 package com.progetto.personale.capstone.prodotto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
@@ -17,13 +15,13 @@ public class Prodotto {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    @Column(length = 50, unique = true)
+    @Column(length = 50)
     private String nomeProdotto;
 
-    @Column(length = 250)
+    @Column(length = 500)
     private String descrizioneProdotto;
 
-    @Column(unique = true)
+    @Column
     private Integer prezzo;
 
     @Column
@@ -31,12 +29,12 @@ public class Prodotto {
 
     @ManyToOne
     @JoinColumn(name = "nome_categoria")
-    @JsonManagedReference // Prevent reference loop
+    @JsonIgnoreProperties("prodotti") // Prevent reference loop
     private Categoria categoria;
 
     @ManyToOne
     @JoinColumn(name = "username")
-    @JsonManagedReference // Prevent reference loop
+    @JsonIgnoreProperties("prodotti") // Prevent reference loop
     private User user;
 
     public Categoria getCategoria() {
@@ -45,5 +43,13 @@ public class Prodotto {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
