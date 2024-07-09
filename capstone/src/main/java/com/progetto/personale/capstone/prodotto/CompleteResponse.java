@@ -11,7 +11,7 @@ public class CompleteResponse {
     private String nomeProdotto;
     private String descrizioneProdotto;
     private Integer prezzo;
-    private String imgUrl;
+    private List<String> imgUrl; // Modifica il tipo di imgUrl a List<String>
     private String username;
     private String avatar; // Aggiungi questo campo
     private List<Categoria> categoria;

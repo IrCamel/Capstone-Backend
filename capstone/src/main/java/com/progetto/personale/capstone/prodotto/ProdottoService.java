@@ -3,10 +3,6 @@ package com.progetto.personale.capstone.prodotto;
 import com.cloudinary.Cloudinary;
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.categoria.CategoriaRepository;
-import com.progetto.personale.capstone.prodotto.CompleteResponse;
-import com.progetto.personale.capstone.prodotto.Prodotto;
-import com.progetto.personale.capstone.prodotto.ProdottoRepository;
-import com.progetto.personale.capstone.prodotto.Request;
 import com.progetto.personale.capstone.security.User;
 import com.progetto.personale.capstone.security.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,13 +38,16 @@ public class ProdottoService {
     }
 
     @Transactional
-    public CompleteResponse createProdotto(Request prodottoRequest, MultipartFile file) throws IOException {
-        var uploadResult = cloudinary.uploader().upload(file.getBytes(),
-                com.cloudinary.utils.ObjectUtils.asMap("public_id", prodottoRequest.getNomeProdotto() + "_avatar"));
-        String url = uploadResult.get("url").toString();
+    public CompleteResponse createProdotto(Request prodottoRequest, MultipartFile[] files) throws IOException {
+        List<String> imgUrls = new ArrayList<>();
+        for (MultipartFile file : files) {
+            var uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                    com.cloudinary.utils.ObjectUtils.asMap("public_id", prodottoRequest.getNomeProdotto() + "_" + file.getOriginalFilename()));
+            imgUrls.add(uploadResult.get("url").toString());
+        }
 
         Prodotto entity = new Prodotto();
-        entity.setImgUrl(url);
+        entity.setImgUrl(imgUrls);
         BeanUtils.copyProperties(prodottoRequest, entity);
         Categoria categoria = categoriaRepository.findByNomeCategoria(prodottoRequest.getNomeCategoria());
         entity.setCategoria(categoria);
@@ -84,8 +84,9 @@ public class ProdottoService {
         CompleteResponse response = new CompleteResponse();
         BeanUtils.copyProperties(prodotto, response);
         response.setUsername(prodotto.getUser().getUsername());
-        response.setAvatar(prodotto.getUser().getAvatar()); // Aggiungi questa linea per l'avatar
+        response.setAvatar(prodotto.getUser().getAvatar());
         response.setCategoria(List.of(prodotto.getCategoria()));
+        response.setImgUrl(prodotto.getImgUrl());
         return response;
     }
 
@@ -93,11 +94,11 @@ public class ProdottoService {
         CompleteResponse response = new CompleteResponse();
         BeanUtils.copyProperties(prodotto, response);
         response.setUsername(prodotto.getUser().getUsername());
-        response.setAvatar(prodotto.getUser().getAvatar()); // Aggiungi questa linea per l'avatar
+        response.setAvatar(prodotto.getUser().getAvatar());
+        response.setImgUrl(prodotto.getImgUrl());
         return response;
     }
 
-    // Metodo per caricare tutte le categorie
     public List<Categoria> getCategorie() {
         return categoriaRepository.findAll();
     }

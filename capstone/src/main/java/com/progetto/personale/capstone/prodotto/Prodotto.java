@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.progetto.personale.capstone.categoria.Categoria;
 import com.progetto.personale.capstone.security.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -24,8 +28,9 @@ public class Prodotto {
     @Column
     private Integer prezzo;
 
-    @Column
-    private String imgUrl;
+    @NotNull
+    @ElementCollection
+    private List<String> imgUrl = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "nome_categoria")

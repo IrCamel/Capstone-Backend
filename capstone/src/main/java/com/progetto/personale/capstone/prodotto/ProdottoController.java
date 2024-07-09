@@ -18,7 +18,6 @@ public class ProdottoController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProdottoController.class);
 
-
     @Autowired
     ProdottoService service;
 
@@ -33,11 +32,11 @@ public class ProdottoController {
     }
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<CompleteResponse> createProdotto(@RequestPart("prodotto") String prodottoJson, @RequestPart("file") MultipartFile file) throws IOException {
+    public ResponseEntity<CompleteResponse> createProdotto(@RequestPart("prodotto") String prodottoJson, @RequestPart("files") MultipartFile[] files) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         Request request = objectMapper.readValue(prodottoJson, Request.class);
 
-        CompleteResponse response = service.createProdotto(request, file);
+        CompleteResponse response = service.createProdotto(request, files);
         return ResponseEntity.ok(response);
     }
 
