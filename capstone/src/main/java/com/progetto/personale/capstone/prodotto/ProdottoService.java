@@ -61,14 +61,18 @@ public class ProdottoService {
     }
 
     public CompleteResponse editProdotto(Long id, Request prodottoRequest) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Prodotto non trovato");
-        }
-        Prodotto entity = repository.findById(id).get();
-        BeanUtils.copyProperties(prodottoRequest, entity);
+        Prodotto entity = repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato"));
+
+        entity.setNomeProdotto(prodottoRequest.getNomeProdotto());
+        entity.setDescrizioneProdotto(prodottoRequest.getDescrizioneProdotto());
+        entity.setPrezzo(prodottoRequest.getPrezzo());
+
+        Categoria categoria = categoriaRepository.findByNomeCategoria(prodottoRequest.getNomeCategoria());
+        entity.setCategoria(categoria);
+
         repository.save(entity);
 
-        return convertToResponse(entity);
+        return convertToCompleteResponse(entity);
     }
 
     public String deleteProdotto(Long id) {
@@ -78,6 +82,12 @@ public class ProdottoService {
         } else {
             throw new EntityNotFoundException("Prodotto non trovato");
         }
+    }
+
+    public List<CompleteResponse> searchProducts(String keyword) {
+        return repository.searchByKeyword(keyword).stream()
+                .map(this::convertToCompleteResponse)
+                .collect(Collectors.toList());
     }
 
     private CompleteResponse convertToCompleteResponse(Prodotto prodotto) {
@@ -101,5 +111,11 @@ public class ProdottoService {
 
     public List<Categoria> getCategorie() {
         return categoriaRepository.findAll();
+    }
+
+    public boolean isAuthorized(Long prodottoId, String username) {
+        Prodotto prodotto = repository.findById(prodottoId)
+                .orElseThrow(() -> new EntityNotFoundException("Prodotto non trovato"));
+        return prodotto.getUser().getUsername().equals(username);
     }
 }
